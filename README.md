@@ -54,6 +54,8 @@ To
 classpath:spring/web/servlet-context-keycloak.xml
 ```
 
+## Keycloak Setup
+In order to setup keycloak to work with entando instance, please refer to the documentation here https://github.com/entando/entando-keycloak-plugin/wiki/Setup-Keycloak
 
 # Known issues
 
