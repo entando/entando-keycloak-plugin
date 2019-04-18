@@ -1,7 +1,9 @@
 package org.entando.entando.keycloak.services.keycloak;
 
+import com.agiletec.aps.system.services.user.User;
 import org.entando.entando.aps.system.services.group.model.GroupDto;
 import org.entando.entando.aps.system.services.role.model.RoleDto;
+import org.entando.entando.aps.system.services.user.IUserService;
 import org.entando.entando.aps.system.services.user.model.UserDto;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -9,7 +11,10 @@ import org.keycloak.representations.idm.UserRepresentation;
 public class KeycloakMapper {
 
     public static UserDto convertUser(final UserRepresentation userRepresentation) {
-        return new UserDto(userRepresentation);
+        final User user = new User();
+        user.setDisabled(!userRepresentation.isEnabled());
+        user.setUsername(userRepresentation.getUsername());
+        return new UserDto(user);
     }
 
     public static GroupDto convertGroup(final GroupRepresentation groupRepresentation) {
