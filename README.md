@@ -44,8 +44,7 @@ keycloak.clientSecret=${KEYCLOAK_CLIENT_SECRET:930837f0-95b2-4eeb-b303-82a56cac7
 
 ### Edit web.xml
 
-And finally you have to change the configuration on `web.xml`
-From
+And finally you have to change the configuration on `web.xml` from
 ```
 classpath:spring/web/servlet-context.xml
 ```
