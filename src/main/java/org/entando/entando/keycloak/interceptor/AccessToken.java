@@ -1,12 +1,5 @@
 package org.entando.entando.keycloak.interceptor;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Optional.ofNullable;
-
 public class AccessToken {
 
     private String name;
@@ -14,16 +7,6 @@ public class AccessToken {
     private String email;
 
     private boolean active;
-
-    @JsonProperty("resource_access")
-    private Map<String, ResourceAccess> resourceAccess;
-
-    public boolean hasResourceAccess(final String clientId, final String role) {
-        return ofNullable(resourceAccess.get(clientId))
-                .map(ResourceAccess::getRoles)
-                .map(roles -> roles.contains(role))
-                .orElse(false);
-    }
 
     @Override
     public String toString() {
@@ -60,26 +43,6 @@ public class AccessToken {
 
     public void setActive(final boolean active) {
         this.active = active;
-    }
-
-    public Map<String, ResourceAccess> getResourceAccess() {
-        return resourceAccess;
-    }
-
-    public void setResourceAccess(final Map<String, ResourceAccess> resourceAccess) {
-        this.resourceAccess = resourceAccess;
-    }
-
-    public static class ResourceAccess {
-        private List<String> roles;
-
-        public List<String> getRoles() {
-            return roles;
-        }
-
-        public void setRoles(final List<String> roles) {
-            this.roles = roles;
-        }
     }
 
 }

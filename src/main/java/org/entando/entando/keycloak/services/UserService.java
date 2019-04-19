@@ -1,21 +1,20 @@
-package org.entando.entando.keycloak.services.entando.user;
+package org.entando.entando.keycloak.services;
 
+import com.agiletec.aps.system.exception.ApsSystemException;
+import com.agiletec.aps.system.services.authorization.Authorization;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
-import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
+import com.agiletec.aps.system.services.user.User;
+import com.agiletec.aps.system.services.user.UserDetails;
 import org.entando.entando.aps.system.exception.ResourceNotFoundException;
+import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.aps.system.services.user.IUserService;
 import org.entando.entando.aps.system.services.user.model.UserAuthorityDto;
 import org.entando.entando.aps.system.services.user.model.UserDto;
-import org.entando.entando.keycloak.services.keycloak.KeycloakConfiguration;
-import org.entando.entando.keycloak.services.keycloak.KeycloakMapper;
-import org.entando.entando.keycloak.services.keycloak.KeycloakService;
 import org.entando.entando.web.common.model.PagedMetadata;
 import org.entando.entando.web.common.model.RestListRequest;
 import org.entando.entando.web.user.model.UserAuthoritiesRequest;
-import org.entando.entando.web.user.model.UserAuthority;
 import org.entando.entando.web.user.model.UserPasswordRequest;
 import org.entando.entando.web.user.model.UserRequest;
-import org.keycloak.admin.client.resource.RoleResource;
 import org.keycloak.representations.idm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,53 +36,38 @@ public class UserService implements IUserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
+    private final IAuthorizationManager authorizationManager;
     private final KeycloakService keycloakService;
-    private final String clientId;
 
     @Autowired
-    public UserService(final KeycloakConfiguration configuration, final KeycloakService keycloakService) {
+    public UserService(final IAuthorizationManager authorizationManager,
+                       final KeycloakConfiguration configuration,
+                       final KeycloakService keycloakService) {
+        this.authorizationManager = authorizationManager;
         this.keycloakService = keycloakService;
-        this.clientId = configuration.getClientId();
     }
 
     @Override
     public List<UserAuthorityDto> getUserAuthorities(final String username) {
-        try {
-            final UserRepresentation user = getUserRepresentation(username);
-            return keycloakService.getRealmResource()
-                    .users().get(user.getId()).groups()
-                    .stream().findFirst()
-                    .map(this::getUserAuthorities)
-                    .orElse(Collections.emptyList());
-        } catch (Exception e) {
-            log.error("Error while trying to execute getUserAuthorities", e);
-            throw e;
-        }
-    }
-
-    private List<UserAuthorityDto> getUserAuthorities(final GroupRepresentation group) {
-        return keycloakService.getRealmResource().groups().group(group.getId()).roles()
-                .clientLevel(keycloakService.getClientUUID()).listAll()
-                .stream()
-                .map(role -> new UserAuthorityDto(group.getName(), role.getName()))
+        return getUserDetails(username).getAuthorizations()
+                .stream().map(UserAuthorityDto::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<UserAuthorityDto> addUserAuthorities(final String username, final UserAuthoritiesRequest request) {
-        final ClientRepresentation client = keycloakService.getRealmResource().clients().findByClientId(clientId)
-                .stream().findFirst().orElseThrow(RuntimeException::new);
-        final UserRepresentation user = getUserRepresentation(username);
-        final List<String> roles = user.getClientRoles().get(clientId);
-        final List<RoleRepresentation> newRoles = request.stream()
-                .map(UserAuthority::getRole)
-                .filter(role -> !roles.contains(role))
-                .map(keycloakService.getRealmResource().clients().get(clientId).roles()::get)
-                .map(RoleResource::toRepresentation)
-                .collect(Collectors.toList());
-
-        keycloakService.getRealmResource().users().get(user.getId()).roles().clientLevel(client.getId()).add(newRoles);
-        return getUserAuthorities(username);
+        final UserDetails user = getUserDetails(username);
+        return request.stream().map(authorization -> {
+            try {
+                if (!authorizationManager.isAuthOnGroupAndRole(user, authorization.getGroup(), authorization.getRole(), true)) {
+                    authorizationManager.addUserAuthorization(username, authorization.getGroup(), authorization.getRole());
+                }
+            } catch (ApsSystemException ex) {
+                log.error("Error in add authorities for {}", username, ex);
+                throw new RestServerError("Error in add authorities", ex);
+            }
+            return new UserAuthorityDto(authorization.getGroup(), authorization.getRole());
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -95,15 +78,12 @@ public class UserService implements IUserService {
 
     @Override
     public void deleteUserAuthorities(final String username) {
-        final UserRepresentation user = getUserRepresentation(username);
-        final ClientRepresentation client = keycloakService.getRealmResource().clients().findByClientId(clientId)
-                .stream().findFirst().orElseThrow(RuntimeException::new);
-        final List<String> roles = user.getClientRoles().get(clientId);
-        final List<RoleRepresentation> toRemoveRoles = roles.stream()
-                .map(keycloakService.getRealmResource().clients().get(clientId).roles()::get)
-                .map(RoleResource::toRepresentation)
-                .collect(Collectors.toList());
-        keycloakService.getRealmResource().users().get(user.getId()).roles().clientLevel(client.getId()).remove(toRemoveRoles);
+        try {
+            authorizationManager.deleteUserAuthorizations(username);
+        } catch (ApsSystemException e) {
+            log.error("Error in delete authorities for {}", username, e);
+            throw new RestServerError("Error in delete authorities", e);
+        }
     }
 
     @Override
@@ -125,6 +105,19 @@ public class UserService implements IUserService {
     @Override
     public UserDto getUser(final String username) {
         return KeycloakMapper.convertUser(getUserRepresentation(username));
+    }
+
+    public UserDetails getUserDetails(final String username) {
+        try {
+            final User userDetails = KeycloakMapper.convertUserDetails(getUserRepresentation(username));
+            final List<Authorization> authorizations = authorizationManager.getUserAuthorizations(username);
+
+            userDetails.setAuthorizations(authorizations);
+            return userDetails;
+        } catch (ApsSystemException e) {
+            log.error("Error in loading user {}", username, e);
+            throw new RestServerError("Error in loading user", e);
+        }
     }
 
     private UserRepresentation getUserRepresentation(final String username) {
@@ -180,8 +173,5 @@ public class UserService implements IUserService {
         credentials.setType("password");
         keycloakService.getRealmResource().users().get(userId).resetPassword(credentials);
     }
-
-    public void setAuthorizationManager(IAuthorizationManager authorizationManager) {}
-    public void setAuthenticationProvider(IAuthenticationProviderManager authenticationProvider) {}
 
 }

@@ -1,7 +1,10 @@
 package org.entando.entando.keycloak.interceptor;
 
-import com.agiletec.aps.system.services.user.User;
-import org.entando.entando.keycloak.services.keycloak.KeycloakConfiguration;
+import com.agiletec.aps.system.exception.ApsSystemException;
+import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
+import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
+import com.agiletec.aps.system.services.user.UserDetails;
+import org.entando.entando.keycloak.services.KeycloakConfiguration;
 import org.entando.entando.web.common.annotation.RestAccessControl;
 import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
 import org.entando.entando.web.common.exceptions.EntandoTokenException;
@@ -20,14 +23,14 @@ import javax.servlet.http.HttpServletResponse;
 
 public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
 
-    private static final Logger log = LoggerFactory.getLogger(org.entando.entando.web.common.interceptor.EntandoOauth2Interceptor.class);
+    private static final Logger log = LoggerFactory.getLogger(KeycloakOauth2Interceptor.class);
 
-    @Autowired
-    private KeycloakConfiguration configuration;
+    @Autowired private KeycloakConfiguration configuration;
+    @Autowired private IAuthenticationProviderManager authenticationProviderManager;
+    @Autowired private IAuthorizationManager authorizationManager;
 
     @Override
     public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response, final Object handler) {
-        log.info("EntandoOauth2Interceptor.preHandle init");
         if (handler instanceof HandlerMethod) {
             final HandlerMethod method = (HandlerMethod) handler;
             final RestAccessControl accessControl = method.getMethodAnnotation(RestAccessControl.class);
@@ -36,7 +39,6 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
                 validateToken(request, permission);
             }
         }
-        log.info("EntandoOauth2Interceptor.preHandle finish");
         return true;
     }
 
@@ -61,15 +63,20 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
             throw new EntandoTokenException("invalid or expired token", request, "guest");
         }
 
-        if (!accessToken.hasResourceAccess(configuration.getClientId(), permission)) {
-            log.warn("User {} is missing the required permission {}", accessToken.getUsername(), permission);
-            throw new EntandoAuthorizationException(null, request, accessToken.getUsername());
+        try {
+            final UserDetails user = authenticationProviderManager.getUser(accessToken.getUsername());
+            if (!authorizationManager.isAuthOnPermission(user, permission)) {
+                log.warn("User {} is missing the required permission {}", accessToken.getUsername(), permission);
+                throw new EntandoAuthorizationException(null, request, accessToken.getUsername());
+            }
+
+            request.getSession().setAttribute("user", user);
+
+            log.info("User authenticated");
+        } catch (ApsSystemException e) {
+            log.error("System exception", e);
+            throw new EntandoTokenException("error parsing OAuth parameters", request, accessToken.getUsername());
         }
-
-        setupSession(request, accessToken);
-        request.setAttribute("accessToken", accessToken);
-
-        log.info("User authenticated");
     }
 
     private ResponseEntity<AccessToken> request(final String bearerToken) {
@@ -92,13 +99,6 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
         map.add("client_id", configuration.getClientId());
         map.add("client_secret", configuration.getClientSecret());
         return map;
-    }
-
-    private void setupSession(final HttpServletRequest request, final AccessToken accessToken) {
-        final User user = new User();
-        user.setUsername(accessToken.getUsername());
-        user.setDisabled(!accessToken.isActive());
-        request.getSession().setAttribute("user", user);
     }
 
 }

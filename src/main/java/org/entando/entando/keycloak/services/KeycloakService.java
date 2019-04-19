@@ -1,4 +1,4 @@
-package org.entando.entando.keycloak.services.keycloak;
+package org.entando.entando.keycloak.services;
 
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
@@ -30,8 +30,4 @@ public class KeycloakService {
         return realmResource;
     }
 
-    public String getClientUUID() {
-        return realmResource.clients()
-                .findByClientId(configuration.getClientId()).get(0).getId();
-    }
 }
