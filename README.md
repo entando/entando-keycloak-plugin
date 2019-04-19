@@ -1,7 +1,17 @@
 # Entando Keycloak Plugin
-Keycloak Integration for Entando Core - Gives SSO capabilities and also has User, Role and Group Management through Keycloak.
+Keycloak Integration for Entando Core - Gives SSO capabilities and also has User Management through Keycloak.
 
-## Installing on your project
+## Scope
+
+### What this plugin does
+Enables SSO capabilities to an Entando Instance by using Keycloak. Moves User Management to Keycloak.
+
+### What this plugin does not
+This plugin doesn't come with Role and Group management, because Entando Core roles/groups model isn't compatible with Keycloak.
+
+## Installing
+
+### Installing on your project
 First add the `entando-keycloak-auth` dependency to your pom.xml
 
 ```
@@ -31,7 +41,7 @@ First add the `entando-keycloak-auth` dependency to your pom.xml
 <!-- </required-by> -->
 ```
 
-### Edit systemParams.properties
+#### Edit systemParams.properties
 
 Then you have to open the `systemParams.properties` to add keycloak configuration
 
@@ -42,7 +52,7 @@ keycloak.clientId=${KEYCLOAK_CLIENT_ID:entando-core}
 keycloak.clientSecret=${KEYCLOAK_CLIENT_SECRET:930837f0-95b2-4eeb-b303-82a56cac76e6}
 ```
 
-### Edit web.xml
+#### Edit web.xml
 
 And finally you have to change the configuration on `web.xml` from
 ```
@@ -57,6 +67,6 @@ classpath:spring/web/servlet-context-keycloak.xml
 ## Keycloak Setup
 In order to setup keycloak to work with entando instance, please refer to the documentation here https://github.com/entando/entando-keycloak-plugin/wiki/Setup-Keycloak
 
-# Known issues
+## Known issues
 
 Right now I detected some dependency issues with `entando-plugin-jpinfinispan` so, while I don't find a solution to this you have to disable this dependency on your project
