@@ -4,10 +4,11 @@ Keycloak Integration for Entando Core - Gives SSO capabilities and also has User
 ## Scope
 
 ### What this plugin does
-Enables SSO capabilities to an Entando Instance by using Keycloak. Moves User Management to Keycloak.
+* Enables SSO capabilities to an Entando Instance by using Keycloak.
+* Moves User Management to Keycloak.
 
 ### What this plugin does not
-This plugin doesn't come with Role and Group management, because Entando Core roles/groups model isn't compatible with Keycloak.
+This plugin doesn't come with Role and Group management, because Entando Core roles/groups model isn't compatible with Keycloak. That means that even with the same users across multiple Entando Instances, the role and group mappings have to be configured on each instance.
 
 ## Installing
 
