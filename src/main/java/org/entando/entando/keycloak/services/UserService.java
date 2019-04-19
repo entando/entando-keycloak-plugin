@@ -41,7 +41,6 @@ public class UserService implements IUserService {
 
     @Autowired
     public UserService(final IAuthorizationManager authorizationManager,
-                       final KeycloakConfiguration configuration,
                        final KeycloakService keycloakService) {
         this.authorizationManager = authorizationManager;
         this.keycloakService = keycloakService;
@@ -107,7 +106,7 @@ public class UserService implements IUserService {
         return KeycloakMapper.convertUser(getUserRepresentation(username));
     }
 
-    public UserDetails getUserDetails(final String username) {
+    UserDetails getUserDetails(final String username) {
         try {
             final User userDetails = KeycloakMapper.convertUserDetails(getUserRepresentation(username));
             final List<Authorization> authorizations = authorizationManager.getUserAuthorizations(username);

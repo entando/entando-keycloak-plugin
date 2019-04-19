@@ -11,11 +11,9 @@ import org.springframework.stereotype.Service;
 public class KeycloakService {
 
     private final RealmResource realmResource;
-    private final KeycloakConfiguration configuration;
 
     @Autowired
     public KeycloakService(final KeycloakConfiguration configuration) {
-        this.configuration = configuration;
         final Keycloak keycloak = KeycloakBuilder.builder()
                 .serverUrl(configuration.getAuthUrl())
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
@@ -26,7 +24,7 @@ public class KeycloakService {
         this.realmResource = keycloak.realm(configuration.getRealm());
     }
 
-    public RealmResource getRealmResource() {
+    RealmResource getRealmResource() {
         return realmResource;
     }
 
