@@ -131,7 +131,7 @@ public class UserService implements IUserService {
         final UserRepresentation user = getUserRepresentation(userRequest.getUsername());
         ofNullable(userRequest.getStatus()).map(IUserService.STATUS_ACTIVE::equals).ifPresent(user::setEnabled);
         ofNullable(userRequest.getPassword())
-                .ifPresent(password -> updateUserPassword(user.getId(), password, true));
+                .ifPresent(password -> updateUserPassword(user.getId(), password, false));
         keycloakService.getRealmResource().users().get(user.getId()).update(user);
         return KeycloakMapper.convertUser(user);
     }
@@ -144,9 +144,9 @@ public class UserService implements IUserService {
             user.setEnabled(IUserService.STATUS_ACTIVE.equals(userRequest.getStatus()));
 
             final Response response = keycloakService.getRealmResource().users().create(user);
-            if (response.getStatus() == 200) {
+            if (response.getStatus() == 201) {
                 final String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-                updateUserPassword(userId, userRequest.getPassword(), true);
+                updateUserPassword(userId, userRequest.getPassword(), false);
                 return KeycloakMapper.convertUser(user);
             }
 
