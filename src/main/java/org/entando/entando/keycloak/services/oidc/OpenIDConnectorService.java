@@ -1,6 +1,10 @@
 package org.entando.entando.keycloak.services.oidc;
 
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
+import org.entando.entando.keycloak.services.oidc.exception.AccountDisabledException;
+import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
+import org.entando.entando.keycloak.services.oidc.exception.InvalidCredentialsException;
+import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
 import org.slf4j.Logger;
@@ -31,22 +35,26 @@ public class OpenIDConnectorService {
         authToken = Base64.getEncoder().encodeToString(authData.getBytes());
     }
 
-    public AuthResponse login(final String username, final String password) {
+    public AuthResponse login(final String username, final String password) throws OidcException {
         try {
             final ResponseEntity<AuthResponse> response = request(username, password);
             return HttpStatus.OK.equals(response.getStatusCode()) ? response.getBody() : null;
         } catch (HttpClientErrorException e) {
             if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
+                if (e.getResponseBodyAsString().contains("Account is not fully set up")) {
+                    throw new CredentialsExpiredException(e);
+                }
+                if (e.getResponseBodyAsString().contains("Account disabled")) {
+                    throw new AccountDisabledException(e);
+                }
                 log.error("There was an error while trying to authenticate, " +
                         "this might indicate a misconfiguration on Keycloak {}",
                         e.getResponseBodyAsString(), e);
-                throw e;
             }
             if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode())) {
-                // invalid credentials
-                return null;
+                throw new InvalidCredentialsException(e);
             }
-            throw e;
+            throw new OidcException(e);
         }
     }
 

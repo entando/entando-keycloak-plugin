@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 @Primary
@@ -123,6 +124,7 @@ public class UserService implements IUserService {
     private UserRepresentation getUserRepresentation(final String username) {
         return keycloakService.getRealmResource().users().search(username).stream()
                 .findFirst()
+                .map(usr -> keycloakService.getRealmResource().users().get(usr.getId()).toRepresentation())
                 .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", username));
     }
 
@@ -131,7 +133,7 @@ public class UserService implements IUserService {
         final UserRepresentation user = getUserRepresentation(userRequest.getUsername());
         ofNullable(userRequest.getStatus()).map(IUserService.STATUS_ACTIVE::equals).ifPresent(user::setEnabled);
         ofNullable(userRequest.getPassword())
-                .ifPresent(password -> updateUserPassword(user.getId(), password, false));
+                .ifPresent(password -> updateUserPassword(user, password, true));
         keycloakService.getRealmResource().users().get(user.getId()).update(user);
         return KeycloakMapper.convertUser(user);
     }
@@ -145,8 +147,8 @@ public class UserService implements IUserService {
 
             final Response response = keycloakService.getRealmResource().users().create(user);
             if (response.getStatus() == 201) {
-                final String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-                updateUserPassword(userId, userRequest.getPassword(), false);
+                user.setId(response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1"));
+                updateUserPassword(user, userRequest.getPassword(), true);
                 return KeycloakMapper.convertUser(user);
             }
 
@@ -165,21 +167,26 @@ public class UserService implements IUserService {
     @Override
     public UserDto updateUserPassword(final UserPasswordRequest request) {
         final UserRepresentation user = getUserRepresentation(request.getUsername());
-        updateUserPassword(user.getId(), request.getNewPassword(), false);
+        updateUserPassword(user, request.getNewPassword(), false);
         return KeycloakMapper.convertUser(user);
     }
 
     void updateUserPassword(final String username, final String password) {
         final UserRepresentation user = getUserRepresentation(username);
-        updateUserPassword(user.getId(), password, false);
+        updateUserPassword(user, password, false);
     }
 
-    private void updateUserPassword(final String userId, final String password, final boolean temporary) {
+    private void updateUserPassword(final UserRepresentation user, final String password, final boolean temporary) {
         final CredentialRepresentation credentials = new CredentialRepresentation();
         credentials.setValue(password);
         credentials.setTemporary(temporary);
         credentials.setType("password");
-        keycloakService.getRealmResource().users().get(userId).resetPassword(credentials);
+        keycloakService.getRealmResource().users().get(user.getId()).resetPassword(credentials);
+
+        if (!temporary) {
+            user.setRequiredActions(emptyList());
+            keycloakService.getRealmResource().users().get(user.getId()).update(user);
+        }
     }
 
 }

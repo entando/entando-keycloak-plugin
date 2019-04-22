@@ -6,6 +6,8 @@ import com.agiletec.aps.system.services.user.UserDetails;
 import org.apache.commons.lang.StringUtils;
 import org.entando.entando.aps.system.services.user.IUserService;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
+import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.web.user.model.UserRequest;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,9 +106,15 @@ public class UserManager implements IUserManager {
 
     @Override
     public UserDetails getUser(final String username, final String password) {
-        return Optional.ofNullable(oidcService.login(username, password))
-            .map(token -> getUser(username))
-            .orElse(null);
+        try {
+            return Optional.ofNullable(oidcService.login(username, password))
+                    .map(token -> getUser(username))
+                    .orElse(null);
+        } catch (CredentialsExpiredException e) {
+            return getUser(username);
+        } catch (OidcException e) {
+            return null;
+        }
     }
 
     @Override
