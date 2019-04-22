@@ -3,31 +3,22 @@ package org.entando.entando.keycloak.services;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
-@Primary
-@Service
 public class AuthenticationProviderManager implements IAuthenticationProviderManager {
 
-    private final UserService userService;
-
-    @Autowired
-    public AuthenticationProviderManager(final UserService userService) {
-        this.userService = userService;
-    }
+    @Autowired private UserManager userManager;
 
     @Override
     public UserDetails getUser(final String username) {
-        return userService.getUserDetails(username);
+        return userManager.getUser(username);
     }
 
-    @Override // deprecated
+    @Override
     public UserDetails getUser(final String username, final String password) {
-        return getUser(username);
+        return userManager.getUser(username, password);
     }
 
     @Override // deprecated

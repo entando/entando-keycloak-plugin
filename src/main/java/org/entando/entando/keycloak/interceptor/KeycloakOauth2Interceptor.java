@@ -5,16 +5,16 @@ import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.web.common.annotation.RestAccessControl;
 import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
 import org.entando.entando.web.common.exceptions.EntandoTokenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -26,6 +26,7 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
     private static final Logger log = LoggerFactory.getLogger(KeycloakOauth2Interceptor.class);
 
     @Autowired private KeycloakConfiguration configuration;
+    @Autowired private OpenIDConnectorService oidcService;
     @Autowired private IAuthenticationProviderManager authenticationProviderManager;
     @Autowired private IAuthorizationManager authorizationManager;
 
@@ -51,7 +52,7 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
         }
 
         final String bearerToken = authorization.substring("Bearer ".length());
-        final ResponseEntity<AccessToken> resp = request(bearerToken);
+        final ResponseEntity<AccessToken> resp = oidcService.validateToken(bearerToken);
         final AccessToken accessToken = resp.getBody();
 
         if (HttpStatus.NOT_FOUND.equals(resp.getStatusCode()) || HttpStatus.UNAUTHORIZED.equals(resp.getStatusCode())) {
@@ -77,28 +78,6 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
             log.error("System exception", e);
             throw new EntandoTokenException("error parsing OAuth parameters", request, accessToken.getUsername());
         }
-    }
-
-    private ResponseEntity<AccessToken> request(final String bearerToken) {
-        final RestTemplate restTemplate = new RestTemplate();
-        final HttpEntity<MultiValueMap<String, String>> req = createRequest(bearerToken);
-        final String url = String.format("%s/realms/%s/protocol/openid-connect/token/introspect", configuration.getAuthUrl(), configuration.getRealm());
-        return restTemplate.postForEntity(url, req, AccessToken.class);
-    }
-
-    private HttpEntity<MultiValueMap<String, String>> createRequest(final String bearerToken) {
-        final MultiValueMap<String, String> body = createBody(bearerToken);
-        final HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        return new HttpEntity<>(body, headers);
-    }
-
-    private MultiValueMap<String, String> createBody(final String bearerToken) {
-        final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("token", bearerToken);
-        map.add("client_id", configuration.getClientId());
-        map.add("client_secret", configuration.getClientSecret());
-        return map;
     }
 
 }

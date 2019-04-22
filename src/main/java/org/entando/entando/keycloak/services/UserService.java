@@ -15,7 +15,8 @@ import org.entando.entando.web.common.model.RestListRequest;
 import org.entando.entando.web.user.model.UserAuthoritiesRequest;
 import org.entando.entando.web.user.model.UserPasswordRequest;
 import org.entando.entando.web.user.model.UserRequest;
-import org.keycloak.representations.idm.*;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,9 +144,13 @@ public class UserService implements IUserService {
             user.setEnabled(IUserService.STATUS_ACTIVE.equals(userRequest.getStatus()));
 
             final Response response = keycloakService.getRealmResource().users().create(user);
-            final String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-            updateUserPassword(userId, userRequest.getPassword(), true);
-            return KeycloakMapper.convertUser(user);
+            if (response.getStatus() == 200) {
+                final String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+                updateUserPassword(userId, userRequest.getPassword(), true);
+                return KeycloakMapper.convertUser(user);
+            }
+
+            return null;
         } catch (Exception e) {
             log.error("Error while trying to execute addUser", e);
             throw e;
@@ -158,11 +163,15 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserDto updateUserPassword(final UserPasswordRequest passwordRequest) {
-        final UserRepresentation user = getUserRepresentation(passwordRequest.getUsername());
-        // TODO validate user current password
-        updateUserPassword(user.getId(), passwordRequest.getNewPassword(), false);
+    public UserDto updateUserPassword(final UserPasswordRequest request) {
+        final UserRepresentation user = getUserRepresentation(request.getUsername());
+        updateUserPassword(user.getId(), request.getNewPassword(), false);
         return KeycloakMapper.convertUser(user);
+    }
+
+    void updateUserPassword(final String username, final String password) {
+        final UserRepresentation user = getUserRepresentation(username);
+        updateUserPassword(user.getId(), password, false);
     }
 
     private void updateUserPassword(final String userId, final String password, final boolean temporary) {

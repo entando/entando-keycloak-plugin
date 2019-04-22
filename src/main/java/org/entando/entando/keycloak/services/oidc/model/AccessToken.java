@@ -1,4 +1,4 @@
-package org.entando.entando.keycloak.interceptor;
+package org.entando.entando.keycloak.services.oidc.model;
 
 public class AccessToken {
 

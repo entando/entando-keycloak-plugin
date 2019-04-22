@@ -23,4 +23,7 @@
         <constructor-arg index="0" ref="keycloakConfiguration"/>
     </bean>
 
+    <bean id="AuthenticationProviderManager" primary="true" class="org.entando.entando.keycloak.services.AuthenticationProviderManager"/>
+    <bean id="UserManager" primary="true" class="org.entando.entando.keycloak.services.UserManager"/>
+
 </beans>
