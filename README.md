@@ -70,4 +70,40 @@ In order to setup keycloak to work with entando instance, please refer to the do
 
 ## Known issues
 
-Right now I detected some dependency issues with `entando-plugin-jpinfinispan` so, while I don't find a solution to this you have to disable this dependency on your project
+### entando-plugin-jpinfinispan
+
+Right now I detected some dependency issues with `entando-plugin-jpinfinispan`. In order to make it work along with this plugin, you have to add the following dependency to the `pom.xml` file.
+
+```
+<dependency>
+    <groupId>org.jboss.logging</groupId>
+    <artifactId>jboss-logging</artifactId>
+    <version>3.3.0.Final</version>
+</dependency>
+```
+
+### org.apache.log4j.spi.LoggerFactory
+
+If you run this following exception:
+
+```
+Caused by: java.lang.NoClassDefFoundError: org/apache/log4j/spi/LoggerFactory
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:264)
+	at org.owasp.esapi.util.ObjFactory.make(ObjFactory.java:74)
+	at org.owasp.esapi.ESAPI.logFactory(ESAPI.java:137)
+	at org.owasp.esapi.ESAPI.getLogger(ESAPI.java:154)
+	at org.owasp.esapi.reference.DefaultEncoder.<init>(DefaultEncoder.java:75)
+	at org.owasp.esapi.reference.DefaultEncoder.getInstance(DefaultEncoder.java:59)
+	... 82 more
+```
+
+It might also be a dependency conflict, to fix this issue, add the following dependency to your `pom.xml` file.
+
+```
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>1.2.17</version>
+</dependency>
+```
