@@ -3,6 +3,7 @@ package org.entando.entando.keycloak.services;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
+import org.apache.commons.lang.StringUtils;
 import org.entando.entando.aps.system.services.user.IUserService;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
 import org.entando.entando.web.user.model.UserRequest;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UserManager implements IUserManager {
 
@@ -26,9 +28,17 @@ public class UserManager implements IUserManager {
                 .collect(Collectors.toList());
     }
 
+    private Stream<UserRepresentation> list(final String text) {
+        final List<UserRepresentation> list = StringUtils.isEmpty(text)
+                ? keycloakService.getRealmResource().users().list()
+                : keycloakService.getRealmResource().users().search(text);
+        // workaround to a bug on keycloak to not list Service Account Users
+        return list.stream().filter(usr -> !usr.getUsername().startsWith("service-account-"));
+    }
+
     @Override
     public List<String> searchUsernames(final String text) {
-        return keycloakService.getRealmResource().users().search(text).stream()
+        return list(text)
                 .map(UserRepresentation::getUsername)
                 .collect(Collectors.toList());
     }
@@ -42,7 +52,7 @@ public class UserManager implements IUserManager {
 
     @Override
     public List<UserDetails> searchUsers(final String text) {
-        return keycloakService.getRealmResource().users().search(text).stream()
+        return list(text)
                 .map(KeycloakMapper::convertUserDetails)
                 .collect(Collectors.toList());
     }
