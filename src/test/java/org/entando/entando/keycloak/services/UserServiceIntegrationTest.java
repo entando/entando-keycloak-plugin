@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.*;
 
-public class UserServiceIntegratedTest {
+public class UserServiceIntegrationTest {
 
     private static final String USERNAME = "aredfarear";
 
@@ -253,11 +253,15 @@ public class UserServiceIntegratedTest {
         return authority;
     }
 
-    private UserRequest activeUser() {
+    static UserRequest activeUser() {
+        return activeUser(USERNAME, "qwer1234");
+    }
+
+    public static UserRequest activeUser(final String username, final String password) {
         final UserRequest request = new UserRequest();
         request.setStatus(IUserService.STATUS_ACTIVE);
-        request.setUsername(USERNAME);
-        request.setPassword("qwer1234");
+        request.setUsername(username);
+        request.setPassword(password);
         request.setReset(false);
         return request;
     }

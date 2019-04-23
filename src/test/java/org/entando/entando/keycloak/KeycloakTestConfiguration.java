@@ -25,10 +25,6 @@ public class KeycloakTestConfiguration {
     private static KeycloakService keycloakService;
     private static KeycloakConfiguration configuration;
 
-    public static KeycloakService getInstance() {
-        return keycloakService != null ? keycloakService : create();
-    }
-
     public static KeycloakConfiguration getConfiguration() {
         if (configuration == null) create();
         return configuration;
