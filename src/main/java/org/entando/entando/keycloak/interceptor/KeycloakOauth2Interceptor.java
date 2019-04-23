@@ -25,7 +25,6 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(KeycloakOauth2Interceptor.class);
 
-    @Autowired private KeycloakConfiguration configuration;
     @Autowired private OpenIDConnectorService oidcService;
     @Autowired private IAuthenticationProviderManager authenticationProviderManager;
     @Autowired private IAuthorizationManager authorizationManager;
@@ -56,7 +55,7 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
         final AccessToken accessToken = resp.getBody();
 
         if (HttpStatus.NOT_FOUND.equals(resp.getStatusCode()) || HttpStatus.UNAUTHORIZED.equals(resp.getStatusCode())) {
-            log.error("Invalid OAuth2 configuration: {}", configuration);
+            log.error("Invalid OAuth2 configuration");
             throw new EntandoTokenException("Invalid OAuth configuration", request, "guest");
         }
 
@@ -80,4 +79,15 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
         }
     }
 
+    public void setOidcService(final OpenIDConnectorService oidcService) {
+        this.oidcService = oidcService;
+    }
+
+    public void setAuthenticationProviderManager(final IAuthenticationProviderManager authenticationProviderManager) {
+        this.authenticationProviderManager = authenticationProviderManager;
+    }
+
+    public void setAuthorizationManager(final IAuthorizationManager authorizationManager) {
+        this.authorizationManager = authorizationManager;
+    }
 }

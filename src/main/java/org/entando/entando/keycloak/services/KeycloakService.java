@@ -24,7 +24,7 @@ public class KeycloakService {
         this.realmResource = keycloak.realm(configuration.getRealm());
     }
 
-    RealmResource getRealmResource() {
+    public RealmResource getRealmResource() {
         return realmResource;
     }
 

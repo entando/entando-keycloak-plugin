@@ -30,4 +30,8 @@ public class AuthenticationProviderManager implements IAuthenticationProviderMan
     public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(final String s) throws UsernameNotFoundException {
         return null;
     }
+
+    public void setUserManager(final UserManager userManager) {
+        this.userManager = userManager;
+    }
 }

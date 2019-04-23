@@ -5,11 +5,15 @@ import com.agiletec.aps.system.services.authorization.Authorization;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
+import org.apache.commons.lang.StringUtils;
 import org.entando.entando.aps.system.exception.ResourceNotFoundException;
 import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.aps.system.services.user.IUserService;
 import org.entando.entando.aps.system.services.user.model.UserAuthorityDto;
 import org.entando.entando.aps.system.services.user.model.UserDto;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
+import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.web.common.model.PagedMetadata;
 import org.entando.entando.web.common.model.RestListRequest;
 import org.entando.entando.web.user.model.UserAuthoritiesRequest;
@@ -26,6 +30,7 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -40,12 +45,15 @@ public class UserService implements IUserService {
 
     private final IAuthorizationManager authorizationManager;
     private final KeycloakService keycloakService;
+    private final OpenIDConnectorService oidcService;
 
     @Autowired
     public UserService(final IAuthorizationManager authorizationManager,
-                       final KeycloakService keycloakService) {
+                       final KeycloakService keycloakService,
+                       final OpenIDConnectorService oidcService) {
         this.authorizationManager = authorizationManager;
         this.keycloakService = keycloakService;
+        this.oidcService = oidcService;
     }
 
     @Override
@@ -171,9 +179,53 @@ public class UserService implements IUserService {
         return KeycloakMapper.convertUser(user);
     }
 
+    List<String> getUsernames() {
+        return keycloakService.getRealmResource().users().list().stream()
+                .map(UserRepresentation::getUsername)
+                .collect(Collectors.toList());
+    }
+
+    private Stream<UserRepresentation> list(final String text) {
+        final List<UserRepresentation> list = StringUtils.isEmpty(text)
+                ? keycloakService.getRealmResource().users().list()
+                : keycloakService.getRealmResource().users().search(text);
+        // workaround to a bug on keycloak to not list Service Account Users
+        return list.stream().filter(usr -> !usr.getUsername().startsWith("service-account-"));
+    }
+
+    List<String> searchUsernames(final String text) {
+        return list(text)
+                .map(UserRepresentation::getUsername)
+                .collect(Collectors.toList());
+    }
+
     void updateUserPassword(final String username, final String password) {
         final UserRepresentation user = getUserRepresentation(username);
         updateUserPassword(user, password, false);
+    }
+
+    List<UserDetails> getUsers() {
+        return keycloakService.getRealmResource().users().list().stream()
+                .map(KeycloakMapper::convertUserDetails)
+                .collect(Collectors.toList());
+    }
+
+    List<UserDetails> searchUsers(final String text) {
+        return list(text)
+                .map(KeycloakMapper::convertUserDetails)
+                .collect(Collectors.toList());
+    }
+
+    UserDetails getUser(final String username, final String password) {
+        try {
+            return ofNullable(oidcService.login(username, password))
+                    .map(token -> getUserDetails(username))
+                    .orElse(null);
+        } catch (CredentialsExpiredException e) {
+            return getUserDetails(username);
+        } catch (OidcException e) {
+            return null;
+        }
     }
 
     private void updateUserPassword(final UserRepresentation user, final String password, final boolean temporary) {
