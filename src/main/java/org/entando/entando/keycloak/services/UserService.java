@@ -97,18 +97,13 @@ public class UserService implements IUserService {
 
     @Override
     public PagedMetadata<UserDto> getUsers(final RestListRequest requestList, final String withProfile) {
-       try {
-           log.info("Listing Users");
-           final int offset = (requestList.getPage() - 1) * requestList.getPageSize();
-           final Integer count = keycloakService.getRealmResource().users().count();
-           final List<UserDto> list = keycloakService.getRealmResource().users().list(offset, requestList.getPageSize()).stream()
-                   .map(KeycloakMapper::convertUser)
-                   .collect(Collectors.toList());
-           return new PagedMetadata<>(requestList, list, count);
-       } catch (Exception e) {
-           log.error("Error while trying to execute getUsers", e);
-           throw e;
-       }
+       log.info("Listing Users");
+       final int offset = (requestList.getPage() - 1) * requestList.getPageSize();
+       final Integer count = keycloakService.getRealmResource().users().count();
+       final List<UserDto> list = keycloakService.getRealmResource().users().list(offset, requestList.getPageSize()).stream()
+               .map(KeycloakMapper::convertUser)
+               .collect(Collectors.toList());
+       return new PagedMetadata<>(requestList, list, count);
     }
 
     @Override
@@ -148,23 +143,18 @@ public class UserService implements IUserService {
 
     @Override
     public UserDto addUser(final UserRequest userRequest) {
-        try {
-            UserRepresentation user = new UserRepresentation();
-            user.setUsername(userRequest.getUsername());
-            user.setEnabled(IUserService.STATUS_ACTIVE.equals(userRequest.getStatus()));
+        UserRepresentation user = new UserRepresentation();
+        user.setUsername(userRequest.getUsername());
+        user.setEnabled(IUserService.STATUS_ACTIVE.equals(userRequest.getStatus()));
 
-            final Response response = keycloakService.getRealmResource().users().create(user);
-            if (response.getStatus() == 201) {
-                user.setId(response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1"));
-                updateUserPassword(user, userRequest.getPassword(), true);
-                return KeycloakMapper.convertUser(user);
-            }
-
-            return null;
-        } catch (Exception e) {
-            log.error("Error while trying to execute addUser", e);
-            throw e;
+        final Response response = keycloakService.getRealmResource().users().create(user);
+        if (response.getStatus() == 201) {
+            user.setId(response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1"));
+            updateUserPassword(user, userRequest.getPassword(), true);
+            return KeycloakMapper.convertUser(user);
         }
+
+        return null;
     }
 
     @Override

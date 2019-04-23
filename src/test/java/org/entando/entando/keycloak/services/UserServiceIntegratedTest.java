@@ -1,10 +1,14 @@
 package org.entando.entando.keycloak.services;
 
+import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.UserDetails;
+import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.aps.system.services.user.IUserService;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.web.user.model.UserAuthoritiesRequest;
+import org.entando.entando.web.user.model.UserAuthority;
 import org.entando.entando.web.user.model.UserPasswordRequest;
 import org.entando.entando.web.user.model.UserRequest;
 import org.junit.Before;
@@ -12,9 +16,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.*;
 
 public class UserServiceIntegratedTest {
 
@@ -120,22 +128,87 @@ public class UserServiceIntegratedTest {
     }
 
     @Test
+    public void testAddUserAuthorizations() throws ApsSystemException {
+        userService.addUser(activeUser());
+
+        final String group = "administrators";
+        final String role = "admin";
+        final UserAuthority authority = authority(group, role);
+        final UserAuthoritiesRequest request = authorities(authority);
+        when(authorizationManager.isAuthOnGroupAndRole(isA(UserDetails.class), anyString(), anyString(), isA(Boolean.class))).thenReturn(false);
+        userService.addUserAuthorities(USERNAME, request);
+
+        verify(authorizationManager, times(1)).isAuthOnGroupAndRole(isA(UserDetails.class), eq(group), eq(role), eq(true));
+        verify(authorizationManager, times(1)).addUserAuthorization(eq(USERNAME), eq(group), eq(role));
+    }
+
+    @Test
+    public void testUpdateUserAuthorizations() throws ApsSystemException {
+        userService.addUser(activeUser());
+
+        final String group = "administrators";
+        final String role = "admin";
+        final UserAuthority authority = authority(group, role);
+        final UserAuthoritiesRequest request = authorities(authority);
+        when(authorizationManager.isAuthOnGroupAndRole(isA(UserDetails.class), anyString(), anyString(), isA(Boolean.class))).thenReturn(false);
+        userService.updateUserAuthorities(USERNAME, request);
+
+        verify(authorizationManager, times(1)).deleteUserAuthorizations(eq(USERNAME));
+        verify(authorizationManager, times(1)).isAuthOnGroupAndRole(isA(UserDetails.class), eq(group), eq(role), eq(true));
+        verify(authorizationManager, times(1)).addUserAuthorization(eq(USERNAME), eq(group), eq(role));
+    }
+
+    @Test
+    public void testDeleteUserAuthorizations() throws ApsSystemException {
+        userService.addUser(activeUser());
+
+        when(authorizationManager.isAuthOnGroupAndRole(isA(UserDetails.class), anyString(), anyString(), isA(Boolean.class))).thenReturn(false);
+        userService.deleteUserAuthorities(USERNAME);
+
+        verify(authorizationManager, times(1)).deleteUserAuthorizations(eq(USERNAME));
+    }
+
+    @Test
     public void testAddDisabledUserAndAuthenticate() {
         userService.addUser(disabledUser());
         assertThat(userService.getUser(USERNAME, "qwer1234")).isNull();
     }
 
-    @Test public void testGetUserAuthorities() {}
-    @Test public void testAddUserAuthorities() {}
-    @Test public void testUpdateUserAuthorities() {}
-    @Test public void testDeleteUserAuthorities() {}
-    @Test public void testGetUsers() {}
-    @Test public void testGetUser() {}
-    @Test public void testUpdateUser() {}
-    @Test public void testAddUser() {}
-    @Test public void testRemoveUser() {}
-    @Test public void testUpdateUserPassword() {}
+    @Test(expected = RestServerError.class)
+    public void testDeleteUserAuthorizationsException() throws ApsSystemException {
+        userService.addUser(activeUser());
+        doThrow(new ApsSystemException(USERNAME)).when(authorizationManager).deleteUserAuthorizations(anyString());
+        userService.deleteUserAuthorities(USERNAME);
+    }
 
+    @Test(expected = RestServerError.class)
+    public void testAddUserAuthorizationsException() throws ApsSystemException {
+        userService.addUser(activeUser());
+        when(authorizationManager.isAuthOnGroupAndRole(isA(UserDetails.class), anyString(), anyString(), isA(Boolean.class)))
+                .thenReturn(false);
+        doThrow(new ApsSystemException(USERNAME)).when(authorizationManager).addUserAuthorization(anyString(), anyString(), anyString());
+        userService.addUserAuthorities(USERNAME, authorities(authority("group", "role")));
+    }
+
+    @Test(expected = RestServerError.class)
+    public void testGetUserDetailsException() throws ApsSystemException {
+        userService.addUser(activeUser());
+        doThrow(new ApsSystemException(USERNAME)).when(authorizationManager).getUserAuthorizations(anyString());
+        userService.getUserDetails(USERNAME);
+    }
+
+    private UserAuthoritiesRequest authorities(final UserAuthority ... authorities) {
+        final UserAuthoritiesRequest request = new UserAuthoritiesRequest();
+        request.addAll(Arrays.asList(authorities));
+        return request;
+    }
+
+    private UserAuthority authority(final String group, final String role) {
+        final UserAuthority authority = new UserAuthority();
+        authority.setGroup(group);
+        authority.setRole(role);
+        return authority;
+    }
 
     private UserRequest activeUser() {
         final UserRequest request = new UserRequest();
