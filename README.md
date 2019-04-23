@@ -107,3 +107,10 @@ It might also be a dependency conflict, to fix this issue, add the following dep
     <version>1.2.17</version>
 </dependency>
 ```
+
+## Testing
+
+```
+$ docker-compose -f keycloak/docker-compose.yml up -d
+$ mvn test
+```
