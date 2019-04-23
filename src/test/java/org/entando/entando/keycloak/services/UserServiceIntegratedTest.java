@@ -1,12 +1,19 @@
 package org.entando.entando.keycloak.services;
 
 import com.agiletec.aps.system.exception.ApsSystemException;
+import com.agiletec.aps.system.services.authorization.Authorization;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
+import com.agiletec.aps.system.services.group.Group;
+import com.agiletec.aps.system.services.role.Role;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.aps.system.services.user.IUserService;
+import org.entando.entando.aps.system.services.user.model.UserAuthorityDto;
+import org.entando.entando.aps.system.services.user.model.UserDto;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.web.common.model.PagedMetadata;
+import org.entando.entando.web.common.model.RestListRequest;
 import org.entando.entando.web.user.model.UserAuthoritiesRequest;
 import org.entando.entando.web.user.model.UserAuthority;
 import org.entando.entando.web.user.model.UserPasswordRequest;
@@ -17,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,6 +83,41 @@ public class UserServiceIntegratedTest {
         assertThat(userService.getUsernames()).isEmpty();
         assertThat(userService.searchUsers(USERNAME)).isEmpty();
         assertThat(userService.searchUsernames(USERNAME)).isEmpty();
+    }
+
+    @Test
+    public void testGetUser() {
+        userService.addUser(activeUser());
+        final UserDto user = userService.getUser(USERNAME);
+        assertThat(user).hasFieldOrPropertyWithValue("username", USERNAME)
+                .hasFieldOrPropertyWithValue("status", IUserService.STATUS_ACTIVE)
+                .hasFieldOrPropertyWithValue("accountNotExpired", true)
+                .hasFieldOrPropertyWithValue("credentialsNotExpired", false);
+    }
+
+    @Test
+    public void testGetUserAuthorities() throws ApsSystemException {
+        userService.addUser(activeUser());
+        when(authorizationManager.getUserAuthorizations(anyString())).thenReturn(authorizations());
+
+        final List<UserAuthorityDto> authorities = userService.getUserAuthorities(USERNAME);
+        assertThat(authorities).hasSize(1);
+        assertThat(authorities.get(0)).hasFieldOrPropertyWithValue("group", "administrators");
+        assertThat(authorities.get(0)).hasFieldOrPropertyWithValue("role", "admin");
+
+        verify(authorizationManager, times(1)).getUserAuthorizations(eq(USERNAME));
+    }
+
+    @Test
+    public void testGetUsers() {
+        userService.addUser(activeUser());
+        final RestListRequest request = new RestListRequest();
+        final PagedMetadata<UserDto> users = userService.getUsers(request, null);
+        assertThat(users.getBody()).hasSize(1);
+        assertThat(users.getBody().get(0)).hasFieldOrPropertyWithValue("username", USERNAME)
+                .hasFieldOrPropertyWithValue("status", IUserService.STATUS_ACTIVE)
+                .hasFieldOrPropertyWithValue("accountNotExpired", true)
+                .hasFieldOrPropertyWithValue("credentialsNotExpired", false);
     }
 
     @Test
@@ -223,5 +266,14 @@ public class UserServiceIntegratedTest {
         final UserRequest request = activeUser();
         request.setStatus(IUserService.STATUS_DISABLED);
         return request;
+    }
+
+    private List<Authorization> authorizations() {
+        final Group group = new Group();
+        group.setName("administrators");
+        final Role role = new Role();
+        role.setName("admin");
+        final Authorization authorization = new Authorization(group, role);
+        return Collections.singletonList(authorization);
     }
 }

@@ -100,4 +100,7 @@ public class UserManager implements IUserManager {
         return false;
     }
 
+    public void setUserService(final UserService userService) {
+        this.userService = userService;
+    }
 }
