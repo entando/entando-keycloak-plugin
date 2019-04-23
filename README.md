@@ -109,6 +109,7 @@ It might also be a dependency conflict, to fix this issue, add the following dep
 ```
 
 ## Testing
+Some tests are being tested with a real Keycloak instance so, in order to test, you have to start the keycloak before.
 
 ```
 $ docker-compose -f keycloak/docker-compose.yml up -d
