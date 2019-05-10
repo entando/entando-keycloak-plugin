@@ -13,8 +13,9 @@ import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 
 import javax.ws.rs.core.Response;
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 public class KeycloakTestConfiguration {
 
@@ -58,7 +59,7 @@ public class KeycloakTestConfiguration {
     private static void assignRoleRealmAdmin(final RealmResource resource, final ClientResource clientResource) {
         final String id = resource.clients().findByClientId("realm-management").get(0).getId();
         final RoleRepresentation role = resource.clients().get(id).roles().get("realm-admin").toRepresentation();
-        resource.users().get(clientResource.getServiceAccountUser().getId()).roles().clientLevel(id).add(Collections.singletonList(role));
+        resource.users().get(clientResource.getServiceAccountUser().getId()).roles().clientLevel(id).add(singletonList(role));
     }
 
     private static String getClientSecret(final Keycloak keycloak) {
@@ -84,10 +85,11 @@ public class KeycloakTestConfiguration {
         client.setClientId(CLIENT_ID);
         client.setEnabled(true);
         client.setServiceAccountsEnabled(true);
-        client.setStandardFlowEnabled(false);
+        client.setStandardFlowEnabled(true);
         client.setImplicitFlowEnabled(false);
         client.setDirectAccessGrantsEnabled(true);
         client.setAuthorizationServicesEnabled(false);
+        client.setRedirectUris(singletonList("http://localhost:8080/*"));
 
         final RealmResource resource = masterKeycloak.realm(REALM_NAME);
         final Response response = resource.clients().create(client);

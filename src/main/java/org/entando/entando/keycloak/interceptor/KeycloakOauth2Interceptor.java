@@ -4,8 +4,7 @@ import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.entando.entando.keycloak.services.KeycloakConfiguration;
-import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.web.common.annotation.RestAccessControl;
 import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
@@ -25,7 +24,7 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(KeycloakOauth2Interceptor.class);
 
-    @Autowired private OpenIDConnectorService oidcService;
+    @Autowired private OpenIDConnectService oidcService;
     @Autowired private IAuthenticationProviderManager authenticationProviderManager;
     @Autowired private IAuthorizationManager authorizationManager;
 
@@ -79,7 +78,7 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
         }
     }
 
-    public void setOidcService(final OpenIDConnectorService oidcService) {
+    public void setOidcService(final OpenIDConnectService oidcService) {
         this.oidcService = oidcService;
     }
 

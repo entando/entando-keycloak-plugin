@@ -17,18 +17,20 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Base64;
 
 @Service
-public class OpenIDConnectorService {
+public class OpenIDConnectService {
 
-    private static final Logger log = LoggerFactory.getLogger(OpenIDConnectorService.class);
+    private static final Logger log = LoggerFactory.getLogger(OpenIDConnectService.class);
 
     private final KeycloakConfiguration configuration;
     private final String authToken;
 
     @Autowired
-    public OpenIDConnectorService(final KeycloakConfiguration configuration) {
+    public OpenIDConnectService(final KeycloakConfiguration configuration) {
         this.configuration = configuration;
 
         final String authData = configuration.getClientId() + ":" + configuration.getClientSecret();
@@ -58,6 +60,19 @@ public class OpenIDConnectorService {
         }
     }
 
+    public String getRedirectUrl(final String redirectUri, final String state) throws UnsupportedEncodingException {
+        return new StringBuilder(configuration.getAuthUrl())
+                .append("/realms/").append(configuration.getRealm())
+                .append("/protocol/openid-connect/auth")
+                .append("?response_type=code")
+                .append("&client_id=").append(configuration.getClientId())
+                .append("&redirect_uri=").append(URLEncoder.encode(redirectUri, "UTF-8"))
+                .append("&state=").append(state)
+                .append("&login=true")
+                .append("&scope=openid")
+                .toString();
+    }
+
     private ResponseEntity<AuthResponse> request(final String username, final String password) {
         final RestTemplate restTemplate = new RestTemplate();
         final HttpEntity<MultiValueMap<String, String>> req = createLoginRequest(username, password);
@@ -84,6 +99,25 @@ public class OpenIDConnectorService {
         return restTemplate.postForEntity(url, req, AccessToken.class);
     }
 
+    public ResponseEntity<AuthResponse> requestToken(final String code, final String redirectUri) {
+        final RestTemplate restTemplate = new RestTemplate();
+        final HttpEntity<MultiValueMap<String, String>> req = createAuthorizationCodeRequest(code, redirectUri);
+        final String url = String.format("%s/realms/%s/protocol/openid-connect/token", configuration.getAuthUrl(), configuration.getRealm());
+        return restTemplate.postForEntity(url, req, AuthResponse.class);
+    }
+
+    private HttpEntity<MultiValueMap<String, String>> createAuthorizationCodeRequest(final String code, final String redirectUri) {
+        final MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("code", code);
+        body.add("redirect_uri", redirectUri);
+        body.add("grant_type", "authorization_code");
+
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.add("Authorization", "Basic " + authToken);
+        return new HttpEntity<>(body, headers);
+    }
+
     private HttpEntity<MultiValueMap<String, String>> createValidationRequest(final String bearerToken) {
         final MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("token", bearerToken);
@@ -95,4 +129,11 @@ public class OpenIDConnectorService {
         return new HttpEntity<>(body, headers);
     }
 
+    public String getLogoutUrl(final String redirectUri) throws UnsupportedEncodingException {
+        return new StringBuilder(configuration.getAuthUrl())
+                .append("/realms/").append(configuration.getRealm())
+                .append("/protocol/openid-connect/logout")
+                .append("?redirect_uri=").append(URLEncoder.encode(redirectUri, "UTF-8"))
+                .toString();
+    }
 }

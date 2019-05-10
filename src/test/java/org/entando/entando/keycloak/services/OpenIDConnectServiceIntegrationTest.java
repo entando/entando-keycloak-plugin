@@ -2,7 +2,7 @@ package org.entando.entando.keycloak.services;
 
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
-import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
 import org.entando.entando.keycloak.services.oidc.exception.InvalidCredentialsException;
 import org.entando.entando.keycloak.services.oidc.exception.OidcException;
@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.entando.entando.keycloak.services.UserServiceIntegrationTest.activeUser;
 
-public class OpenIDConnectorServiceIntegrationTest {
+public class OpenIDConnectServiceIntegrationTest {
 
     private static final String USERNAME = "iddqd";
     private static final String PASSWORD = "idkfa";
@@ -26,7 +26,7 @@ public class OpenIDConnectorServiceIntegrationTest {
     @Mock
     private IAuthorizationManager authorizationManager;
 
-    private OpenIDConnectorService oidcService;
+    private OpenIDConnectService oidcService;
     private UserService userService;
 
     @Before
@@ -34,7 +34,7 @@ public class OpenIDConnectorServiceIntegrationTest {
         MockitoAnnotations.initMocks(this);
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
         final KeycloakService keycloakService = new KeycloakService(configuration);
-        oidcService = new OpenIDConnectorService(configuration);
+        oidcService = new OpenIDConnectService(configuration);
         userService = new UserService(authorizationManager, keycloakService, oidcService);
 
         KeycloakTestConfiguration.deleteUsers();
