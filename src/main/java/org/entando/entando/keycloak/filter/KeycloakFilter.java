@@ -39,7 +39,7 @@ public class KeycloakFilter implements Filter {
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
         final HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-        if ("/do/login".equals(request.getServletPath())) {
+        if ("/do/login".equals(request.getServletPath()) || "/do/login.action".equals(request.getServletPath())) {
             doLogin(request, response);
         } else if ("/do/logout.action".equals(request.getServletPath())) {
             doLogout(request, response);
