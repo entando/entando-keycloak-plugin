@@ -76,7 +76,7 @@ https://github.com/entando/entando-keycloak-plugin/wiki/Enable-Standard-Flow-for
 
 ### entando-plugin-jpinfinispan
 
-Right now I detected some dependency issues with `entando-plugin-jpinfinispan`. In order to make it work along with this plugin, you have to add the following dependency to the `pom.xml` file.
+There might be dependency issues with `entando-plugin-jpinfinispan`. In order to make it work along with this plugin, you have to add the following dependency to the `pom.xml` file.
 
 ```xml
 <dependency>
