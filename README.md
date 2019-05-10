@@ -15,7 +15,7 @@ This plugin doesn't come with Role and Group management, because Entando Core ro
 ### Installing on your project
 First add the `entando-keycloak-auth` dependency to your pom.xml
 
-```
+```xml
 <dependency>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
@@ -46,7 +46,7 @@ First add the `entando-keycloak-auth` dependency to your pom.xml
 
 Then you have to open the `systemParams.properties` to add keycloak configuration
 
-```
+```properties
 keycloak.authUrl=${KEYCLOAK_AUTH_URL:http://localhost:8081/auth}
 keycloak.realm=${KEYCLOAK_REALM:entando-development}
 keycloak.clientId=${KEYCLOAK_CLIENT_ID:entando-core}
@@ -68,13 +68,17 @@ classpath:spring/web/servlet-context-keycloak.xml
 ## Keycloak Setup
 In order to setup keycloak to work with entando instance, please refer to the documentation here https://github.com/entando/entando-keycloak-plugin/wiki/Setup-Keycloak
 
+## Keycloak Standard Flow
+To enable the standard flow to keep sessions between Entando instances, please refer to the documentation here
+https://github.com/entando/entando-keycloak-plugin/wiki/Enable-Standard-Flow-for-Keycloak-Login
+
 ## Known issues
 
 ### entando-plugin-jpinfinispan
 
 Right now I detected some dependency issues with `entando-plugin-jpinfinispan`. In order to make it work along with this plugin, you have to add the following dependency to the `pom.xml` file.
 
-```
+```xml
 <dependency>
     <groupId>org.jboss.logging</groupId>
     <artifactId>jboss-logging</artifactId>
@@ -86,7 +90,7 @@ Right now I detected some dependency issues with `entando-plugin-jpinfinispan`. 
 
 If you run this following exception:
 
-```
+```java
 Caused by: java.lang.NoClassDefFoundError: org/apache/log4j/spi/LoggerFactory
 	at java.lang.Class.forName0(Native Method)
 	at java.lang.Class.forName(Class.java:264)
@@ -100,7 +104,7 @@ Caused by: java.lang.NoClassDefFoundError: org/apache/log4j/spi/LoggerFactory
 
 It might also be a dependency conflict, to fix this issue, add the following dependency to your `pom.xml` file.
 
-```
+```xml
 <dependency>
     <groupId>log4j</groupId>
     <artifactId>log4j</artifactId>
