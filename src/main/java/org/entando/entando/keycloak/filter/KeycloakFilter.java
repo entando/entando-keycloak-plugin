@@ -25,6 +25,7 @@ public class KeycloakFilter implements Filter {
     private final OpenIDConnectService oidcService;
     private final AuthenticationProviderManager providerManager;
 
+    private static final String SESSION_PARAM_REDIRECT = "redirectTo";
     private static final Logger log = LoggerFactory.getLogger(KeycloakFilter.class);
 
     public KeycloakFilter(final OpenIDConnectService oidcService, final AuthenticationProviderManager providerManager) {
@@ -33,14 +34,16 @@ public class KeycloakFilter implements Filter {
     }
 
     @Override
-    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain chain) throws IOException {
+    public void doFilter(final ServletRequest servletRequest,
+                         final ServletResponse servletResponse,
+                         final FilterChain chain) throws IOException, ServletException {
         log.info("performing action on filter");
 
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
         final HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         if ("/do/login".equals(request.getServletPath()) || "/do/login.action".equals(request.getServletPath())) {
-            doLogin(request, response);
+            doLogin(request, response, chain);
         } else if ("/do/logout.action".equals(request.getServletPath())) {
             doLogout(request, response);
         }
@@ -53,11 +56,12 @@ public class KeycloakFilter implements Filter {
         response.sendRedirect(oidcService.getLogoutUrl(redirectUri));
     }
 
-    private void doLogin(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    private void doLogin(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain) throws IOException, ServletException {
         final HttpSession session = request.getSession();
         final String authorizationCode = request.getParameter("code");
         final String stateParameter = request.getParameter("state");
         final String redirectUri = request.getRequestURL().toString();
+        final String redirectTo = request.getParameter("redirectTo");
 
         if (authorizationCode != null) {
             if (stateParameter == null || !stateParameter.equals(session.getAttribute("state"))) {
@@ -77,18 +81,35 @@ public class KeycloakFilter implements Filter {
                 }
                 final UserDetails user = providerManager.getUser(tokenResponse.getBody().getUsername());
                 session.setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, user);
-                response.sendRedirect(request.getContextPath() + "/do/main");
+
+                final String redirectPath = session.getAttribute(SESSION_PARAM_REDIRECT) != null
+                        ? session.getAttribute("redirectTo").toString()
+                        : "/do/main";
+                session.setAttribute(SESSION_PARAM_REDIRECT, null);
+                response.sendRedirect(request.getContextPath() + redirectPath);
+
                 return;
             } catch (HttpClientErrorException e) {
                 log.error("Error while trying to authenticate", e);
             }
+        } else {
+            if (redirectTo != null && !redirectTo.startsWith("/")) {
+                throw new EntandoTokenException("Invalid redirect", request, "guest");
+            }
+            session.setAttribute(SESSION_PARAM_REDIRECT, redirectTo);
         }
 
-        final String state = UUID.randomUUID().toString();
-        final String redirect = oidcService.getRedirectUrl(redirectUri, state);
+        final Object user = session.getAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER);
 
-        session.setAttribute("state", state);
-        response.sendRedirect(redirect);
+        if (user != null && !((UserDetails)user).getUsername().equals("guest")) {
+            chain.doFilter(request, response);
+        } else {
+            final String state = UUID.randomUUID().toString();
+            final String redirect = oidcService.getRedirectUrl(redirectUri, state);
+
+            session.setAttribute("state", state);
+            response.sendRedirect(redirect);
+        }
     }
 
     @Override public void init(final FilterConfig filterConfig) {}
