@@ -93,10 +93,14 @@ public class KeycloakFilter implements Filter {
                 log.error("Error while trying to authenticate", e);
             }
         } else {
-            if (redirectTo != null && !redirectTo.startsWith("/")) {
-                throw new EntandoTokenException("Invalid redirect", request, "guest");
+            final String path = request.getRequestURL().toString().replace(request.getServletPath(), "");
+            if (redirectTo != null){
+                final String redirect = redirectTo.replace(path, "");
+                if (!redirect.startsWith("/")) {
+                    throw new EntandoTokenException("Invalid redirect", request, "guest");
+                }
+                session.setAttribute(SESSION_PARAM_REDIRECT, redirect);
             }
-            session.setAttribute(SESSION_PARAM_REDIRECT, redirectTo);
         }
 
         final Object user = session.getAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER);
