@@ -21,9 +21,10 @@ public class AuthenticationProviderManager implements IAuthenticationProviderMan
         return userManager.getUser(username, password);
     }
 
-    @Override // deprecated
+    @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
-        return null;
+        userManager.getUser(authentication.getName());
+        return authentication;
     }
 
     @Override // deprecated
