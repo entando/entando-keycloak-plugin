@@ -51,6 +51,7 @@ keycloak.authUrl=${KEYCLOAK_AUTH_URL:http://localhost:8081/auth}
 keycloak.realm=${KEYCLOAK_REALM:entando-development}
 keycloak.clientId=${KEYCLOAK_CLIENT_ID:entando-core}
 keycloak.clientSecret=${KEYCLOAK_CLIENT_SECRET:930837f0-95b2-4eeb-b303-82a56cac76e6}
+keycloak.publicClientId=${KEYCLOAK_PUBLIC_CLIENT_ID:entando-web}
 ```
 
 #### Edit web.xml
