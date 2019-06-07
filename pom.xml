@@ -6,7 +6,7 @@
 
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
-    <version>5.1</version>
+    <version>5.1.0</version>
     <packaging>war</packaging>
     <name>Entando Keycloak Auth</name>
     <description>Entando Keycloak Auth plugin</description>
@@ -20,15 +20,15 @@
     </licenses>
     <developers>
         <developer>
-            <id>e.santoboni</id>
-            <name>Eugenio Santoboni</name>
-            <email>e.santoboni@entando.com</email>
+            <id>sergiofilhowz</id>
+            <name>Sérgio Marcellino</name>
+            <email>s.marcellino@entando.com</email>
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:git@github.com:entando/entando-core.git</connection>
-        <developerConnection>scm:git:git@github.com:entando/entando-core.git</developerConnection>
-        <url>https://github.com/entando/entando-core</url>
+        <connection>scm:git:git@github.com:entando/entando-keycloak-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:entando/entando-keycloak-plugin.git</developerConnection>
+        <url>https://github.com/entando/entando-keycloak-plugin</url>
         <tag>v5.1.0</tag>
     </scm>
     <organization>
