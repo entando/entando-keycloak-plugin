@@ -1,20 +1,18 @@
 package org.entando.entando.keycloak.interceptor;
 
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
-import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
+import org.entando.entando.aps.servlet.security.UserAuthentication;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.web.common.annotation.RestAccessControl;
 import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
-import org.entando.entando.web.common.exceptions.EntandoTokenException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,15 +20,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class KeycloakOauth2InterceptorTest {
 
     private static final String PERMISSION = "my-permission";
 
-    @Mock private OpenIDConnectService oidcService;
-    @Mock private IAuthenticationProviderManager authenticationProviderManager;
     @Mock private IAuthorizationManager authorizationManager;
 
     @Mock private HttpServletRequest request;
@@ -49,8 +50,6 @@ public class KeycloakOauth2InterceptorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         interceptor = new KeycloakOauth2Interceptor();
-        interceptor.setOidcService(oidcService);
-        interceptor.setAuthenticationProviderManager(authenticationProviderManager);
         interceptor.setAuthorizationManager(authorizationManager);
 
         when(resp.getBody()).thenReturn(accessToken);
@@ -64,7 +63,7 @@ public class KeycloakOauth2InterceptorTest {
         assertThat(allowed).isTrue();
     }
 
-    @Test(expected = EntandoTokenException.class)
+    @Test(expected = EntandoAuthorizationException.class)
     public void testWithoutAuthorizationHeader() {
         mockAccessControl();
         when(request.getHeader(anyString())).thenReturn(null);
@@ -73,7 +72,7 @@ public class KeycloakOauth2InterceptorTest {
         verify(request, times(1)).getHeader(eq("Authorization"));
     }
 
-    @Test(expected = EntandoTokenException.class)
+    @Test(expected = EntandoAuthorizationException.class)
     public void testWithInvalidAuthorizationHeader() {
         mockAccessControl();
         when(request.getHeader(eq("Authorization"))).thenReturn("I'm an invalid bearer token");
@@ -83,73 +82,65 @@ public class KeycloakOauth2InterceptorTest {
     }
 
     @Test
-    public void testSuccess() throws ApsSystemException {
+    public void testSuccess() {
         mockAccessControl();
         when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
         when(accessToken.isActive()).thenReturn(true);
         when(accessToken.getUsername()).thenReturn("admin");
-        when(authenticationProviderManager.getUser(anyString())).thenReturn(userDetails);
         when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(true);
+        SecurityContextHolder.getContext().setAuthentication(new UserAuthentication(userDetails));
+
         when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
-        when(oidcService.validateToken(eq("VALIDTOKEN"))).thenReturn(resp);
 
         final boolean allowed = interceptor.preHandle(request, response, method);
         assertThat(allowed).isTrue();
 
-        verify(request, times(1)).getHeader(eq("Authorization"));
-        verify(authenticationProviderManager, times(1)).getUser(eq("admin"));
         verify(authorizationManager, times(1)).isAuthOnPermission(same(userDetails), eq(PERMISSION));
-        verify(session, times(1)).setAttribute(eq("user"), same(userDetails));
+
+        SecurityContextHolder.getContext().setAuthentication(null);
     }
 
     @Test(expected = EntandoAuthorizationException.class)
-    public void testWithoutPermission() throws ApsSystemException {
+    public void testWithoutPermission() {
         mockAccessControl();
         when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
         when(accessToken.isActive()).thenReturn(true);
         when(accessToken.getUsername()).thenReturn("admin");
-        when(authenticationProviderManager.getUser(anyString())).thenReturn(userDetails);
         when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(false);
         when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
-        when(oidcService.validateToken(eq("VALIDTOKEN"))).thenReturn(resp);
 
         interceptor.preHandle(request, response, method);
     }
 
-    @Test(expected = EntandoTokenException.class)
-    public void testUserNotFound() throws ApsSystemException {
+    @Test(expected = EntandoAuthorizationException.class)
+    public void testUserNotFound() {
         mockAccessControl();
         when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
         when(accessToken.isActive()).thenReturn(true);
         when(accessToken.getUsername()).thenReturn("admin");
-        when(authenticationProviderManager.getUser(anyString())).thenThrow(new ApsSystemException(PERMISSION));
         when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(false);
         when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
-        when(oidcService.validateToken(eq("VALIDTOKEN"))).thenReturn(resp);
 
         interceptor.preHandle(request, response, method);
     }
 
-    @Test(expected = EntandoTokenException.class)
+    @Test(expected = EntandoAuthorizationException.class)
     public void testUnauthorizedValidation() {
         mockAccessControl();
         when(resp.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED);
         when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
-        when(oidcService.validateToken(eq("VALIDTOKEN"))).thenReturn(resp);
 
         interceptor.preHandle(request, response, method);
     }
 
-    @Test(expected = EntandoTokenException.class)
-    public void testInactiveToken() throws ApsSystemException {
+    @Test(expected = EntandoAuthorizationException.class)
+    public void testInactiveToken() {
         mockAccessControl();
         when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
         when(accessToken.isActive()).thenReturn(false);
         when(accessToken.getUsername()).thenReturn("admin");
-        when(authenticationProviderManager.getUser(anyString())).thenReturn(userDetails);
         when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(true);
         when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
-        when(oidcService.validateToken(eq("VALIDTOKEN"))).thenReturn(resp);
 
         interceptor.preHandle(request, response, method);
     }
