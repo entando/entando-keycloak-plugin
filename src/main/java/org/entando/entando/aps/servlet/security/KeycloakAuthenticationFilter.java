@@ -51,7 +51,6 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
         final String authorization = request.getHeader("Authorization");
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            log.warn("No bearer token provided");
             final UserDetails guestUser = userManager.getGuestUser();
             final GuestAuthentication guestAuthentication = new GuestAuthentication(guestUser);
             SecurityContextHolder.getContext().setAuthentication(guestAuthentication);
@@ -78,7 +77,6 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
             SecurityContextHolder.getContext().setAuthentication(userAuthentication);
             request.getSession().setAttribute("user", user);
 
-            log.info("User authenticated");
             return userAuthentication;
         } catch (ApsSystemException e) {
             log.error("System exception", e);
