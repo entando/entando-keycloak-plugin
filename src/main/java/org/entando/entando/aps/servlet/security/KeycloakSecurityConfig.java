@@ -27,8 +27,7 @@ public class KeycloakSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        final HttpSecurity httpSecurity = http.addFilterBefore(keycloakAuthenticationFilter, BasicAuthenticationFilter.class)
-                .csrf().disable();
+        final HttpSecurity httpSecurity = http.addFilterBefore(keycloakAuthenticationFilter, BasicAuthenticationFilter.class);
 
         if (StringUtils.isNotEmpty(configuration.getSecureUris())) {
             final String[] urls = configuration.getSecureUris().split(",");

@@ -2,7 +2,6 @@ package org.entando.entando.keycloak.interceptor;
 
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.aps.servlet.security.UserAuthentication;
 import org.entando.entando.web.common.annotation.RestAccessControl;
 import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
@@ -42,7 +41,7 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
             throw new EntandoAuthorizationException("invalid authentication", request, "guest");
         }
         final UserDetails user = (UserDetails) authentication.getDetails();
-        if (StringUtils.isNotEmpty(permission) && !authorizationManager.isAuthOnPermission(user, permission)) {
+        if (!authorizationManager.isAuthOnPermission(user, permission)) {
             log.warn("User {} is missing the required permission {}", user.getUsername(), permission);
             throw new EntandoAuthorizationException(null, request, user.getUsername());
         }
