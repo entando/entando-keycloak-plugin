@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="BaseConfigManager" class="com.agiletec.aps.system.services.baseconfig.BaseConfigManager"
+          parent="abstractService" depends-on="springCacheManager" >
+        <property name="systemParams">
+            <map>
+                <entry key="version">
+                    <value>${version}</value>
+                </entry>
+                <entry key="fileUploadMaxSize">
+                    <value>${file.upload.maxSize}</value>
+                </entry>
+                <entry key="configVersion">
+                    <value>${configVersion}</value>
+                </entry>
+                <entry key="applicationBaseURL">
+                    <value>${applicationBaseURL}</value>
+                </entry>
+                <entry key="resourceRootURL">
+                    <value>${resourceRootURL}</value>
+                </entry>
+                <entry key="resourceDiskRootFolder">
+                    <value>${resourceDiskRootFolder}</value>
+                </entry>
+                <entry key="keycloakAuthUrl">
+                    <value>${keycloak.authUrl}</value>
+                </entry>
+                <entry key="keycloakRealm">
+                    <value>${keycloak.realm}</value>
+                </entry>
+                <entry key="keycloakClientId">
+                    <value>${keycloak.clientId}</value>
+                </entry>
+                <entry key="keycloakPublicClientId">
+                    <value>${keycloak.publicClientId}</value>
+                </entry>
+            </map>
+        </property>
+        <property name="securityConfigPath">
+            <value>${algorithm.securityConfiguration.path}</value>
+        </property>
+        <property name="configDAO" >
+            <bean class="com.agiletec.aps.system.services.baseconfig.ConfigItemDAO">
+                <property name="dataSource" ref="portDataSource" />
+            </bean>
+        </property>
+        <property name="cacheWrapper">
+            <bean class="com.agiletec.aps.system.services.baseconfig.cache.ConfigManagerCacheWrapper">
+                <property name="springCacheManager" ref="springCacheManager" />
+            </bean>
+        </property>
+    </bean>
+
+</beans>

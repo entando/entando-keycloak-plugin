@@ -11,7 +11,7 @@ import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.aps.system.services.user.IUserService;
 import org.entando.entando.aps.system.services.user.model.UserAuthorityDto;
 import org.entando.entando.aps.system.services.user.model.UserDto;
-import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
 import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.web.common.model.PagedMetadata;
@@ -45,12 +45,12 @@ public class UserService implements IUserService {
 
     private final IAuthorizationManager authorizationManager;
     private final KeycloakService keycloakService;
-    private final OpenIDConnectorService oidcService;
+    private final OpenIDConnectService oidcService;
 
     @Autowired
     public UserService(final IAuthorizationManager authorizationManager,
                        final KeycloakService keycloakService,
-                       final OpenIDConnectorService oidcService) {
+                       final OpenIDConnectService oidcService) {
         this.authorizationManager = authorizationManager;
         this.keycloakService = keycloakService;
         this.oidcService = oidcService;

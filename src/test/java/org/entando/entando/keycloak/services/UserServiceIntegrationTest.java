@@ -11,7 +11,7 @@ import org.entando.entando.aps.system.services.user.IUserService;
 import org.entando.entando.aps.system.services.user.model.UserAuthorityDto;
 import org.entando.entando.aps.system.services.user.model.UserDto;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
-import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.web.common.model.PagedMetadata;
 import org.entando.entando.web.common.model.RestListRequest;
 import org.entando.entando.web.user.model.UserAuthoritiesRequest;
@@ -45,7 +45,7 @@ public class UserServiceIntegrationTest {
         MockitoAnnotations.initMocks(this);
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
         final KeycloakService keycloakService = new KeycloakService(configuration);
-        final OpenIDConnectorService oidcService = new OpenIDConnectorService(configuration);
+        final OpenIDConnectService oidcService = new OpenIDConnectService(configuration);
         userService = new UserService(authorizationManager, keycloakService, oidcService);
 
         KeycloakTestConfiguration.deleteUsers();

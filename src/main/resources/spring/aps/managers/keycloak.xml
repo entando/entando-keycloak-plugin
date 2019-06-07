@@ -21,6 +21,9 @@
         <property name="clientSecret">
             <value>${keycloak.clientSecret}</value>
         </property>
+        <property name="secureUris">
+            <value>${keycloak.secureUris:}</value>
+        </property>
     </bean>
 
     <bean id="keycloakService" class="org.entando.entando.keycloak.services.KeycloakService">

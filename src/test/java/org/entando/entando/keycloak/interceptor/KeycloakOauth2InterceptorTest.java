@@ -4,7 +4,7 @@ import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.entando.entando.keycloak.services.oidc.OpenIDConnectorService;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.web.common.annotation.RestAccessControl;
 import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
@@ -29,7 +29,7 @@ public class KeycloakOauth2InterceptorTest {
 
     private static final String PERMISSION = "my-permission";
 
-    @Mock private OpenIDConnectorService oidcService;
+    @Mock private OpenIDConnectService oidcService;
     @Mock private IAuthenticationProviderManager authenticationProviderManager;
     @Mock private IAuthorizationManager authorizationManager;
 
