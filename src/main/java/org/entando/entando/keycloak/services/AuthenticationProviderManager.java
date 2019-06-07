@@ -23,7 +23,9 @@ public class AuthenticationProviderManager implements IAuthenticationProviderMan
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
-        userManager.getUser(authentication.getName());
+        if (authentication != null) {
+            userManager.getUser(authentication.getName());
+        }
         return authentication;
     }
 
