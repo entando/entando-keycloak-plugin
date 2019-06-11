@@ -81,7 +81,7 @@ public class KeycloakFilter implements Filter {
             if (stateParameter == null) {
                 log.warn("State parameter not provided");
             } else if (!stateParameter.equals(session.getAttribute("state"))) {
-                log.warn("State parameter is different than generated");
+                log.warn("State parameter '{}' is different than generated '{}'", stateParameter, session.getAttribute("state"));
             }
 
             try {
