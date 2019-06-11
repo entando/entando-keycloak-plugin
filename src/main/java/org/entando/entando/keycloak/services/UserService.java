@@ -6,6 +6,7 @@ import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.apache.commons.lang.StringUtils;
+import org.entando.entando.KeycloakWiki;
 import org.entando.entando.aps.system.exception.ResourceNotFoundException;
 import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.aps.system.services.user.IUserService;
@@ -25,8 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +37,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
+import static org.entando.entando.KeycloakWiki.wiki;
 
 @Primary
 @Service
@@ -125,10 +129,19 @@ public class UserService implements IUserService {
     }
 
     private UserRepresentation getUserRepresentation(final String username) {
-        return keycloakService.getRealmResource().users().search(username).stream()
-                .findFirst()
-                .map(usr -> keycloakService.getRealmResource().users().get(usr.getId()).toRepresentation())
-                .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", username));
+        try {
+            return keycloakService.getRealmResource().users().search(username).stream()
+                    .findFirst()
+                    .map(usr -> keycloakService.getRealmResource().users().get(usr.getId()).toRepresentation())
+                    .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", username));
+        } catch (ClientErrorException e) {
+            if (HttpStatus.FORBIDDEN.value() == e.getResponse().getStatus()) {
+                throw new RestServerError("There was an error while trying to load user because the " +
+                        "client on Keycloak doesn't have permission to do that. " +
+                        "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_FORBIDDEN), e);
+            }
+            throw e;
+        }
     }
 
     @Override

@@ -2,6 +2,8 @@ package org.entando.entando.keycloak.filter;
 
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.UserDetails;
+import org.entando.entando.KeycloakWiki;
+import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.keycloak.services.AuthenticationProviderManager;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
@@ -19,6 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.UUID;
+
+import static org.entando.entando.KeycloakWiki.wiki;
 
 public class KeycloakFilter implements Filter {
 
@@ -81,17 +85,25 @@ public class KeycloakFilter implements Filter {
                 }
                 final UserDetails user = providerManager.getUser(tokenResponse.getBody().getUsername());
                 session.setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, user);
-
-                final String redirectPath = session.getAttribute(SESSION_PARAM_REDIRECT) != null
-                        ? session.getAttribute("redirectTo").toString()
-                        : "/do/main";
-                session.setAttribute(SESSION_PARAM_REDIRECT, null);
-                response.sendRedirect(request.getContextPath() + redirectPath);
-
-                return;
             } catch (HttpClientErrorException e) {
-                log.error("Error while trying to authenticate", e);
+                if (HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
+                    throw new RestServerError("Unable to validate token because the Client doesn't have permission to do so. " +
+                            "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_PUBLIC), e);
+                }
+                if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
+                    throw new RestServerError("Unable to validate token because the Client credentials are invalid. " +
+                            "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_CREDENTIALS), e);
+                }
+                throw new RestServerError("Unable to validate token", e);
             }
+
+            final String redirectPath = session.getAttribute(SESSION_PARAM_REDIRECT) != null
+                    ? session.getAttribute("redirectTo").toString()
+                    : "/do/main";
+            session.setAttribute(SESSION_PARAM_REDIRECT, null);
+            response.sendRedirect(request.getContextPath() + redirectPath);
+
+            return;
         } else {
             final String path = request.getRequestURL().toString().replace(request.getServletPath(), "");
             if (redirectTo != null){
