@@ -67,6 +67,15 @@ public class KeycloakFilter implements Filter {
         final String stateParameter = request.getParameter("state");
         final String redirectUri = request.getRequestURL().toString();
         final String redirectTo = request.getParameter("redirectTo");
+        final String error = request.getParameter("error");
+        final String errorDescription = request.getParameter("error_description");
+
+        if (StringUtils.isNotEmpty(error)) {
+            if ("unsupported_response_type".equals(error)) {
+                log.error(errorDescription + " Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_STANDARD_FLOW_DISABLED));
+            }
+            throw new EntandoTokenException(errorDescription, request, "guest");
+        }
 
         if (authorizationCode != null) {
             if (stateParameter == null || !stateParameter.equals(session.getAttribute("state"))) {
