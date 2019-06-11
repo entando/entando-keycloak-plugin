@@ -30,7 +30,8 @@ public class KeycloakFilter implements Filter {
     private final OpenIDConnectService oidcService;
     private final AuthenticationProviderManager providerManager;
 
-    private static final String SESSION_PARAM_REDIRECT = "redirectTo";
+    private static final String SESSION_PARAM_STATE = "keycloak-plugin-state";
+    private static final String SESSION_PARAM_REDIRECT = "keycloak-plugin-redirectTo";
     private static final Logger log = LoggerFactory.getLogger(KeycloakFilter.class);
 
     public KeycloakFilter(final OpenIDConnectService oidcService, final AuthenticationProviderManager providerManager) {
@@ -64,7 +65,7 @@ public class KeycloakFilter implements Filter {
     private void doLogin(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain) throws IOException, ServletException {
         final HttpSession session = request.getSession();
         final String authorizationCode = request.getParameter("code");
-        final String stateParameter = request.getParameter("state");
+        final String stateParameter = request.getParameter(SESSION_PARAM_STATE);
         final String redirectUri = request.getRequestURL().toString();
         final String redirectTo = request.getParameter("redirectTo");
         final String error = request.getParameter("error");
@@ -80,8 +81,8 @@ public class KeycloakFilter implements Filter {
         if (authorizationCode != null) {
             if (stateParameter == null) {
                 log.warn("State parameter not provided");
-            } else if (!stateParameter.equals(session.getAttribute("state"))) {
-                log.warn("State parameter '{}' is different than generated '{}'", stateParameter, session.getAttribute("state"));
+            } else if (!stateParameter.equals(session.getAttribute(SESSION_PARAM_STATE))) {
+                log.warn("State parameter '{}' is different than generated '{}'", stateParameter, session.getAttribute(SESSION_PARAM_STATE));
             }
 
             try {
@@ -97,6 +98,7 @@ public class KeycloakFilter implements Filter {
                 }
                 final UserDetails user = providerManager.getUser(tokenResponse.getBody().getUsername());
                 session.setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, user);
+                log.info("Sucessfuly authenticated user {}", user.getUsername());
             } catch (HttpClientErrorException e) {
                 if (HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
                     throw new RestServerError("Unable to validate token because the Client doesn't have permission to do so. " +
@@ -135,15 +137,16 @@ public class KeycloakFilter implements Filter {
             final String state = UUID.randomUUID().toString();
             final String redirect = oidcService.getRedirectUrl(redirectUri, state);
 
-            session.setAttribute("state", state);
+            session.setAttribute(SESSION_PARAM_STATE, state);
             response.sendRedirect(redirect);
         }
     }
 
     private void redirect(final HttpServletRequest request, final HttpServletResponse response, final HttpSession session) throws IOException {
         final String redirectPath = session.getAttribute(SESSION_PARAM_REDIRECT) != null
-                ? session.getAttribute("redirectTo").toString()
+                ? session.getAttribute(SESSION_PARAM_REDIRECT).toString()
                 : "/do/main";
+        log.info("Redirecting user to {}", (request.getContextPath() + redirectPath));
         session.setAttribute(SESSION_PARAM_REDIRECT, null);
         response.sendRedirect(request.getContextPath() + redirectPath);
     }
