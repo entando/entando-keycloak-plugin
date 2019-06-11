@@ -65,7 +65,7 @@ public class KeycloakFilter implements Filter {
     private void doLogin(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain) throws IOException, ServletException {
         final HttpSession session = request.getSession();
         final String authorizationCode = request.getParameter("code");
-        final String stateParameter = request.getParameter(SESSION_PARAM_STATE);
+        final String stateParameter = request.getParameter("state");
         final String redirectUri = request.getRequestURL().toString();
         final String redirectTo = request.getParameter("redirectTo");
         final String error = request.getParameter("error");
@@ -97,7 +97,7 @@ public class KeycloakFilter implements Filter {
                     throw new EntandoTokenException("invalid or expired token", request, "guest");
                 }
                 final UserDetails user = providerManager.getUser(tokenResponse.getBody().getUsername());
-                session.setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, user);
+                saveUserOnSession(request, user);
                 log.info("Sucessfuly authenticated user {}", user.getUsername());
             } catch (HttpClientErrorException e) {
                 if (HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
@@ -140,6 +140,11 @@ public class KeycloakFilter implements Filter {
             session.setAttribute(SESSION_PARAM_STATE, state);
             response.sendRedirect(redirect);
         }
+    }
+
+    private void saveUserOnSession(final HttpServletRequest request, final UserDetails guestUser) {
+        request.getSession().setAttribute("user", guestUser);
+        request.getSession().setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, guestUser);
     }
 
     private void redirect(final HttpServletRequest request, final HttpServletResponse response, final HttpSession session) throws IOException {
