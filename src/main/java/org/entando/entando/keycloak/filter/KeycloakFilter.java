@@ -78,8 +78,10 @@ public class KeycloakFilter implements Filter {
         }
 
         if (authorizationCode != null) {
-            if (stateParameter == null || !stateParameter.equals(session.getAttribute("state"))) {
-                log.warn("State parameter not provided or different than generated");
+            if (stateParameter == null) {
+                log.warn("State parameter not provided");
+            } else if (!stateParameter.equals(session.getAttribute("state"))) {
+                log.warn("State parameter is different than generated");
             }
 
             try {
