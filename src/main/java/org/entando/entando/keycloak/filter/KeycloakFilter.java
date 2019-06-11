@@ -2,6 +2,7 @@ package org.entando.entando.keycloak.filter;
 
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.UserDetails;
+import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.KeycloakWiki;
 import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.keycloak.services.AuthenticationProviderManager;
@@ -91,18 +92,18 @@ public class KeycloakFilter implements Filter {
                             "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_PUBLIC), e);
                 }
                 if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
-                    throw new RestServerError("Unable to validate token because the Client credentials are invalid. " +
-                            "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_CREDENTIALS), e);
+                    if (isInvalidCredentials(e)) {
+                        throw new RestServerError("Unable to validate token because the Client credentials are invalid. " +
+                                "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_CREDENTIALS), e);
+                    } else if (isInvalidCode(e)) {
+                        redirect(request, response, session);
+                        return;
+                    }
                 }
                 throw new RestServerError("Unable to validate token", e);
             }
 
-            final String redirectPath = session.getAttribute(SESSION_PARAM_REDIRECT) != null
-                    ? session.getAttribute("redirectTo").toString()
-                    : "/do/main";
-            session.setAttribute(SESSION_PARAM_REDIRECT, null);
-            response.sendRedirect(request.getContextPath() + redirectPath);
-
+            redirect(request, response, session);
             return;
         } else {
             final String path = request.getRequestURL().toString().replace(request.getServletPath(), "");
@@ -126,6 +127,22 @@ public class KeycloakFilter implements Filter {
             session.setAttribute("state", state);
             response.sendRedirect(redirect);
         }
+    }
+
+    private void redirect(final HttpServletRequest request, final HttpServletResponse response, final HttpSession session) throws IOException {
+        final String redirectPath = session.getAttribute(SESSION_PARAM_REDIRECT) != null
+                ? session.getAttribute("redirectTo").toString()
+                : "/do/main";
+        session.setAttribute(SESSION_PARAM_REDIRECT, null);
+        response.sendRedirect(request.getContextPath() + redirectPath);
+    }
+
+    private boolean isInvalidCredentials(final HttpClientErrorException exception) {
+        return StringUtils.contains(exception.getResponseBodyAsString(), "unauthorized_client");
+    }
+
+    private boolean isInvalidCode(final HttpClientErrorException exception) {
+        return StringUtils.contains(exception.getResponseBodyAsString(), "invalid_grant");
     }
 
     @Override public void init(final FilterConfig filterConfig) {}
