@@ -138,7 +138,8 @@ public class UserService implements IUserService {
             if (HttpStatus.FORBIDDEN.value() == e.getResponse().getStatus()) {
                 throw new RestServerError("There was an error while trying to load user because the " +
                         "client on Keycloak doesn't have permission to do that. " +
-                        "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_FORBIDDEN), e);
+                        "The client needs to have Service Accounts enabled and the permission 'realm-admin' on client 'realm-management'. " +
+                        "For more details, refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_FORBIDDEN), e);
             }
             throw e;
         }

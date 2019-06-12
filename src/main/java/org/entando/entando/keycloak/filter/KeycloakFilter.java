@@ -73,7 +73,7 @@ public class KeycloakFilter implements Filter {
 
         if (StringUtils.isNotEmpty(error)) {
             if ("unsupported_response_type".equals(error)) {
-                log.error(errorDescription + " Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_STANDARD_FLOW_DISABLED));
+                log.error(errorDescription + ". For more details, refer to the wiki " + wiki(KeycloakWiki.EN_APP_STANDARD_FLOW_DISABLED));
             }
             throw new EntandoTokenException(errorDescription, request, "guest");
         }
@@ -101,13 +101,15 @@ public class KeycloakFilter implements Filter {
                 log.info("Sucessfuly authenticated user {}", user.getUsername());
             } catch (HttpClientErrorException e) {
                 if (HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
-                    throw new RestServerError("Unable to validate token because the Client doesn't have permission to do so. " +
-                            "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_PUBLIC), e);
+                    throw new RestServerError("Unable to validate token because the Client in keycloak is configured as public. " +
+                            "Please change the client on keycloak to confidential. " +
+                            "For more details, refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_PUBLIC), e);
                 }
                 if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
                     if (isInvalidCredentials(e)) {
                         throw new RestServerError("Unable to validate token because the Client credentials are invalid. " +
-                                "Please refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_CREDENTIALS), e);
+                                "Please make sure the credentials from keycloak is correctly set in the params or environment variable." +
+                                "For more details, refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_CREDENTIALS), e);
                     } else if (isInvalidCode(e)) {
                         redirect(request, response, session);
                         return;
