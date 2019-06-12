@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.KeycloakWiki;
 import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.keycloak.services.AuthenticationProviderManager;
+import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
@@ -29,14 +30,18 @@ public class KeycloakFilter implements Filter {
 
     private final OpenIDConnectService oidcService;
     private final AuthenticationProviderManager providerManager;
+    private final KeycloakAuthorizationManager keycloakGroupManager;
 
     private static final String SESSION_PARAM_STATE = "keycloak-plugin-state";
     private static final String SESSION_PARAM_REDIRECT = "keycloak-plugin-redirectTo";
     private static final Logger log = LoggerFactory.getLogger(KeycloakFilter.class);
 
-    public KeycloakFilter(final OpenIDConnectService oidcService, final AuthenticationProviderManager providerManager) {
+    public KeycloakFilter(final OpenIDConnectService oidcService,
+                          final AuthenticationProviderManager providerManager,
+                          final KeycloakAuthorizationManager keycloakGroupManager) {
         this.oidcService = oidcService;
         this.providerManager = providerManager;
+        this.keycloakGroupManager = keycloakGroupManager;
     }
 
     @Override
@@ -97,6 +102,8 @@ public class KeycloakFilter implements Filter {
                     throw new EntandoTokenException("invalid or expired token", request, "guest");
                 }
                 final UserDetails user = providerManager.getUser(tokenResponse.getBody().getUsername());
+
+                keycloakGroupManager.processNewUser(user);
                 saveUserOnSession(request, user);
                 log.info("Sucessfuly authenticated user {}", user.getUsername());
             } catch (HttpClientErrorException e) {
