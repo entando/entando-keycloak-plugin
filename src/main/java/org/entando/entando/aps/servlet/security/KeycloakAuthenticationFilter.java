@@ -82,6 +82,8 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
 
             SecurityContextHolder.getContext().setAuthentication(userAuthentication);
             saveUserOnSession(request, user);
+
+            // TODO optimise to not check on every request
             keycloakGroupManager.processNewUser(user);
 
             return userAuthentication;
