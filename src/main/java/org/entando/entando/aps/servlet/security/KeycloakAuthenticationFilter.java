@@ -1,5 +1,6 @@
 package org.entando.entando.aps.servlet.security;
 
+import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.UserDetails;
@@ -54,7 +55,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
             final UserDetails guestUser = userManager.getGuestUser();
             final GuestAuthentication guestAuthentication = new GuestAuthentication(guestUser);
             SecurityContextHolder.getContext().setAuthentication(guestAuthentication);
-            request.getSession().setAttribute("user", guestUser);
+            saveUserOnSession(request, guestUser);
             return guestAuthentication;
         }
 
@@ -75,13 +76,18 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
             final UserDetails user = authenticationProviderManager.getUser(accessToken.getUsername());
             final UserAuthentication userAuthentication = new UserAuthentication(user);
             SecurityContextHolder.getContext().setAuthentication(userAuthentication);
-            request.getSession().setAttribute("user", user);
+            saveUserOnSession(request, user);
 
             return userAuthentication;
         } catch (ApsSystemException e) {
             log.error("System exception", e);
             throw new InsufficientAuthenticationException("error parsing OAuth parameters");
         }
+    }
+
+    private void saveUserOnSession(final HttpServletRequest request, final UserDetails guestUser) {
+        request.getSession().setAttribute("user", guestUser);
+        request.getSession().setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, guestUser);
     }
 
     @Override

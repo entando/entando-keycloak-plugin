@@ -2,6 +2,9 @@ package org.entando.entando.keycloak.filter;
 
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.UserDetails;
+import org.apache.commons.lang3.StringUtils;
+import org.entando.entando.KeycloakWiki;
+import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.keycloak.services.AuthenticationProviderManager;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
@@ -20,12 +23,15 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.UUID;
 
+import static org.entando.entando.KeycloakWiki.wiki;
+
 public class KeycloakFilter implements Filter {
 
     private final OpenIDConnectService oidcService;
     private final AuthenticationProviderManager providerManager;
 
-    private static final String SESSION_PARAM_REDIRECT = "redirectTo";
+    private static final String SESSION_PARAM_STATE = "keycloak-plugin-state";
+    private static final String SESSION_PARAM_REDIRECT = "keycloak-plugin-redirectTo";
     private static final Logger log = LoggerFactory.getLogger(KeycloakFilter.class);
 
     public KeycloakFilter(final OpenIDConnectService oidcService, final AuthenticationProviderManager providerManager) {
@@ -62,10 +68,21 @@ public class KeycloakFilter implements Filter {
         final String stateParameter = request.getParameter("state");
         final String redirectUri = request.getRequestURL().toString();
         final String redirectTo = request.getParameter("redirectTo");
+        final String error = request.getParameter("error");
+        final String errorDescription = request.getParameter("error_description");
+
+        if (StringUtils.isNotEmpty(error)) {
+            if ("unsupported_response_type".equals(error)) {
+                log.error(errorDescription + ". For more details, refer to the wiki " + wiki(KeycloakWiki.EN_APP_STANDARD_FLOW_DISABLED));
+            }
+            throw new EntandoTokenException(errorDescription, request, "guest");
+        }
 
         if (authorizationCode != null) {
-            if (stateParameter == null || !stateParameter.equals(session.getAttribute("state"))) {
-                log.warn("State parameter not provided or different than generated");
+            if (stateParameter == null) {
+                log.warn("State parameter not provided");
+            } else if (!stateParameter.equals(session.getAttribute(SESSION_PARAM_STATE))) {
+                log.warn("State parameter '{}' is different than generated '{}'", stateParameter, session.getAttribute(SESSION_PARAM_STATE));
             }
 
             try {
@@ -80,18 +97,29 @@ public class KeycloakFilter implements Filter {
                     throw new EntandoTokenException("invalid or expired token", request, "guest");
                 }
                 final UserDetails user = providerManager.getUser(tokenResponse.getBody().getUsername());
-                session.setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, user);
-
-                final String redirectPath = session.getAttribute(SESSION_PARAM_REDIRECT) != null
-                        ? session.getAttribute("redirectTo").toString()
-                        : "/do/main";
-                session.setAttribute(SESSION_PARAM_REDIRECT, null);
-                response.sendRedirect(request.getContextPath() + redirectPath);
-
-                return;
+                saveUserOnSession(request, user);
+                log.info("Sucessfuly authenticated user {}", user.getUsername());
             } catch (HttpClientErrorException e) {
-                log.error("Error while trying to authenticate", e);
+                if (HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
+                    throw new RestServerError("Unable to validate token because the Client in keycloak is configured as public. " +
+                            "Please change the client on keycloak to confidential. " +
+                            "For more details, refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_PUBLIC), e);
+                }
+                if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
+                    if (isInvalidCredentials(e)) {
+                        throw new RestServerError("Unable to validate token because the Client credentials are invalid. " +
+                                "Please make sure the credentials from keycloak is correctly set in the params or environment variable." +
+                                "For more details, refer to the wiki " + wiki(KeycloakWiki.EN_APP_CLIENT_CREDENTIALS), e);
+                    } else if (isInvalidCode(e)) {
+                        redirect(request, response, session);
+                        return;
+                    }
+                }
+                throw new RestServerError("Unable to validate token", e);
             }
+
+            redirect(request, response, session);
+            return;
         } else {
             final String path = request.getRequestURL().toString().replace(request.getServletPath(), "");
             if (redirectTo != null){
@@ -111,9 +139,31 @@ public class KeycloakFilter implements Filter {
             final String state = UUID.randomUUID().toString();
             final String redirect = oidcService.getRedirectUrl(redirectUri, state);
 
-            session.setAttribute("state", state);
+            session.setAttribute(SESSION_PARAM_STATE, state);
             response.sendRedirect(redirect);
         }
+    }
+
+    private void saveUserOnSession(final HttpServletRequest request, final UserDetails guestUser) {
+        request.getSession().setAttribute("user", guestUser);
+        request.getSession().setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, guestUser);
+    }
+
+    private void redirect(final HttpServletRequest request, final HttpServletResponse response, final HttpSession session) throws IOException {
+        final String redirectPath = session.getAttribute(SESSION_PARAM_REDIRECT) != null
+                ? session.getAttribute(SESSION_PARAM_REDIRECT).toString()
+                : "/do/main";
+        log.info("Redirecting user to {}", (request.getContextPath() + redirectPath));
+        session.setAttribute(SESSION_PARAM_REDIRECT, null);
+        response.sendRedirect(request.getContextPath() + redirectPath);
+    }
+
+    private boolean isInvalidCredentials(final HttpClientErrorException exception) {
+        return StringUtils.contains(exception.getResponseBodyAsString(), "unauthorized_client");
+    }
+
+    private boolean isInvalidCode(final HttpClientErrorException exception) {
+        return StringUtils.contains(exception.getResponseBodyAsString(), "invalid_grant");
     }
 
     @Override public void init(final FilterConfig filterConfig) {}
