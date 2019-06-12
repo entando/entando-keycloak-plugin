@@ -24,6 +24,9 @@
         <property name="secureUris">
             <value>${keycloak.secureUris:}</value>
         </property>
+        <property name="defaultAuthorizations">
+            <value>${keycloak.authenticated.user.default.authorizations:}</value>
+        </property>
     </bean>
 
     <bean id="keycloakService" class="org.entando.entando.keycloak.services.KeycloakService">
