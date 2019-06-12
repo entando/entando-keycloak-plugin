@@ -10,6 +10,15 @@ Keycloak Integration for Entando Core - Gives SSO capabilities and also has User
 ### What this plugin does not
 This plugin doesn't come with Role and Group management, because Entando Core roles/groups model isn't compatible with Keycloak. That means that even with the same users across multiple Entando Instances, the role and group mappings have to be configured on each instance.
 
+## Properties
+>- `keycloak.authUrl`: It's the Keycloak auth url (Example: `https://is.yourdomain.com/auth`)
+>- `keycloak.realm`: The keycloak realm (See https://www.keycloak.org/docs/3.2/server_admin/topics/overview/concepts.html)
+>- `keycloak.clientId`: The keycloak confidential client id
+>- `keycloak.clientSecret`: The secret from the keycloak client
+>- `keycloak.publicClientId`: The second keycloak client, this one must be public
+>- `keycloak.secureUris`: **[OPTIONAL]** Use if you want to secure an endpoint. Works with wildcards, comma separated.
+>- `keycloak.authenticated.user.default.authorizations`: **[OPTIONAL]** Use if you want to automatically assign `group:role` to any user that logs in, comma separated. Example: `administrators:admin,readers`
+
 ## Installing
 
 ### Installing on your project
@@ -52,6 +61,8 @@ keycloak.realm=${KEYCLOAK_REALM:entando-development}
 keycloak.clientId=${KEYCLOAK_CLIENT_ID:entando-core}
 keycloak.clientSecret=${KEYCLOAK_CLIENT_SECRET:930837f0-95b2-4eeb-b303-82a56cac76e6}
 keycloak.publicClientId=${KEYCLOAK_PUBLIC_CLIENT_ID:entando-web}
+keycloak.secureUris=/api/plugins/cms/contents/*/model/*,/api/pwa/notifications/*
+keycloak.authenticated.user.default.authorizations=administrators:admin,readers
 ```
 
 #### Edit web.xml

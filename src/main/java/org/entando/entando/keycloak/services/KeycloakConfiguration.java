@@ -7,6 +7,7 @@ public class KeycloakConfiguration {
     private String clientId;
     private String clientSecret;
     private String secureUris;
+    private String defaultAuthorizations;
 
     public String toString() {
         return String.format("{authUrl=%s, realm=%s, clientId=%s, clientSecret=%s}", authUrl, realm, clientId, clientSecret);
@@ -50,5 +51,13 @@ public class KeycloakConfiguration {
 
     public void setSecureUris(final String secureUris) {
         this.secureUris = secureUris;
+    }
+
+    public String getDefaultAuthorizations() {
+        return defaultAuthorizations;
+    }
+
+    public void setDefaultAuthorizations(final String defaultAuthorizations) {
+        this.defaultAuthorizations = defaultAuthorizations;
     }
 }

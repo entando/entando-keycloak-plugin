@@ -1,8 +1,10 @@
 package org.entando.entando.aps.servlet.security;
 
+import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.UserDetails;
+import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
 import org.entando.entando.keycloak.services.UserManager;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
@@ -34,12 +36,15 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
     private final UserManager userManager;
     private final OpenIDConnectService oidcService;
     private final IAuthenticationProviderManager authenticationProviderManager;
+    private final KeycloakAuthorizationManager keycloakGroupManager;
 
     @Autowired
     public KeycloakAuthenticationFilter(final UserManager userManager,
                                         final OpenIDConnectService oidcService,
-                                        final IAuthenticationProviderManager authenticationProviderManager) {
+                                        final IAuthenticationProviderManager authenticationProviderManager,
+                                        final KeycloakAuthorizationManager keycloakGroupManager) {
         super("/api/**");
+        this.keycloakGroupManager = keycloakGroupManager;
         this.setAuthenticationManager(authenticationProviderManager);
         this.userManager = userManager;
         this.oidcService = oidcService;
@@ -54,7 +59,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
             final UserDetails guestUser = userManager.getGuestUser();
             final GuestAuthentication guestAuthentication = new GuestAuthentication(guestUser);
             SecurityContextHolder.getContext().setAuthentication(guestAuthentication);
-            request.getSession().setAttribute("user", guestUser);
+            saveUserOnSession(request, guestUser);
             return guestAuthentication;
         }
 
@@ -74,14 +79,23 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
         try {
             final UserDetails user = authenticationProviderManager.getUser(accessToken.getUsername());
             final UserAuthentication userAuthentication = new UserAuthentication(user);
+
             SecurityContextHolder.getContext().setAuthentication(userAuthentication);
-            request.getSession().setAttribute("user", user);
+            saveUserOnSession(request, user);
+
+            // TODO optimise to not check on every request
+            keycloakGroupManager.processNewUser(user);
 
             return userAuthentication;
         } catch (ApsSystemException e) {
             log.error("System exception", e);
             throw new InsufficientAuthenticationException("error parsing OAuth parameters");
         }
+    }
+
+    private void saveUserOnSession(final HttpServletRequest request, final UserDetails guestUser) {
+        request.getSession().setAttribute("user", guestUser);
+        request.getSession().setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, guestUser);
     }
 
     @Override
