@@ -135,7 +135,8 @@ public class UserService implements IUserService {
                     .map(usr -> keycloakService.getRealmResource().users().get(usr.getId()).toRepresentation())
                     .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", username));
         } catch (ClientErrorException e) {
-            if (HttpStatus.FORBIDDEN.value() == e.getResponse().getStatus()) {
+            if (HttpStatus.FORBIDDEN.value() == e.getResponse().getStatus()
+                    || HttpStatus.UNAUTHORIZED.value() == e.getResponse().getStatus()) {
                 throw new RestServerError("There was an error while trying to load user because the " +
                         "client on Keycloak doesn't have permission to do that. " +
                         "The client needs to have Service Accounts enabled and the permission 'realm-admin' on client 'realm-management'. " +
