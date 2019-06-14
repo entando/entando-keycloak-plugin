@@ -17,7 +17,6 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.ClientErrorException;
@@ -30,19 +29,18 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static org.entando.entando.KeycloakWiki.wiki;
 
-public class UserManager implements IUserManager {
+public class KeycloakUserManager implements IUserManager {
 
     private static final String ERRCODE_USER_NOT_FOUND = "1";
-    private static final Logger log = LoggerFactory.getLogger(UserManager.class);
+    private static final Logger log = LoggerFactory.getLogger(KeycloakUserManager.class);
 
     private final IAuthorizationManager authorizationManager;
     private final KeycloakService keycloakService;
     private final OpenIDConnectService oidcService;
 
-    @Autowired
-    public UserManager(final IAuthorizationManager authorizationManager,
-                       final KeycloakService keycloakService,
-                       final OpenIDConnectService oidcService) {
+    public KeycloakUserManager(final IAuthorizationManager authorizationManager,
+                               final KeycloakService keycloakService,
+                               final OpenIDConnectService oidcService) {
         this.authorizationManager = authorizationManager;
         this.keycloakService = keycloakService;
         this.oidcService = oidcService;
@@ -159,7 +157,7 @@ public class UserManager implements IUserManager {
 
     @Override// deprecated
     public boolean isArgon2Encrypted(final String encrypted) {
-        return false;
+        return true;
     }
 
     private Stream<UserRepresentation> list(final String text) {

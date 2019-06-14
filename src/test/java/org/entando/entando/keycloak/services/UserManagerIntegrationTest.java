@@ -25,7 +25,7 @@ public class UserManagerIntegrationTest {
 
     @Mock private IAuthorizationManager authorizationManager;
 
-    private UserManager userManager;
+    private KeycloakUserManager userManager;
 
     @Before
     public void setUp() {
@@ -33,7 +33,7 @@ public class UserManagerIntegrationTest {
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
         final KeycloakService keycloakService = new KeycloakService(configuration);
         final OpenIDConnectService oidcService = new OpenIDConnectService(configuration);
-        userManager = new UserManager(authorizationManager, keycloakService, oidcService);
+        userManager = new KeycloakUserManager(authorizationManager, keycloakService, oidcService);
 
         KeycloakTestConfiguration.deleteUsers();
     }

@@ -3,9 +3,9 @@ package org.entando.entando.aps.servlet.security;
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
+import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
-import org.entando.entando.keycloak.services.UserManager;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.slf4j.Logger;
@@ -33,13 +33,13 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
 
     private static final Logger log = LoggerFactory.getLogger(KeycloakAuthenticationFilter.class);
 
-    private final UserManager userManager;
+    private final IUserManager userManager;
     private final OpenIDConnectService oidcService;
     private final IAuthenticationProviderManager authenticationProviderManager;
     private final KeycloakAuthorizationManager keycloakGroupManager;
 
     @Autowired
-    public KeycloakAuthenticationFilter(final UserManager userManager,
+    public KeycloakAuthenticationFilter(final IUserManager userManager,
                                         final OpenIDConnectService oidcService,
                                         final IAuthenticationProviderManager authenticationProviderManager,
                                         final KeycloakAuthorizationManager keycloakGroupManager) {

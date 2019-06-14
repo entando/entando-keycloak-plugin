@@ -1,30 +1,40 @@
 package org.entando.entando.keycloak.services;
 
+import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
+import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.client.RestClientException;
 
-public class AuthenticationProviderManager implements IAuthenticationProviderManager {
+public class KeycloakAuthenticationProviderManager implements IAuthenticationProviderManager {
 
-    @Autowired private UserManager userManager;
+    private final IUserManager userManager;
+
+    public KeycloakAuthenticationProviderManager(final IUserManager userManager) {
+        this.userManager = userManager;
+    }
 
     @Override
-    public UserDetails getUser(final String username) {
+    public UserDetails getUser(final String username) throws ApsSystemException {
         return userManager.getUser(username);
     }
 
     @Override
-    public UserDetails getUser(final String username, final String password) {
+    public UserDetails getUser(final String username, final String password) throws ApsSystemException {
         return userManager.getUser(username, password);
     }
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
         if (authentication != null) {
-            userManager.getUser(authentication.getName());
+            try {
+                userManager.getUser(authentication.getName());
+            } catch (ApsSystemException e) {
+                throw new RestClientException("Error detected during the authentication of the user " + authentication.getName());
+            }
         }
         return authentication;
     }
@@ -34,7 +44,4 @@ public class AuthenticationProviderManager implements IAuthenticationProviderMan
         return null;
     }
 
-    public void setUserManager(final UserManager userManager) {
-        this.userManager = userManager;
-    }
 }

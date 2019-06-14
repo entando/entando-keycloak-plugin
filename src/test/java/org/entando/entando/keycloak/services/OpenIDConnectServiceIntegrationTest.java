@@ -27,7 +27,7 @@ public class OpenIDConnectServiceIntegrationTest {
     private IAuthorizationManager authorizationManager;
 
     private OpenIDConnectService oidcService;
-    private UserManager userManager;
+    private KeycloakUserManager userManager;
 
     @Before
     public void setUp() {
@@ -35,7 +35,7 @@ public class OpenIDConnectServiceIntegrationTest {
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
         final KeycloakService keycloakService = new KeycloakService(configuration);
         oidcService = new OpenIDConnectService(configuration);
-        userManager = new UserManager(authorizationManager, keycloakService, oidcService);
+        userManager = new KeycloakUserManager(authorizationManager, keycloakService, oidcService);
 
         KeycloakTestConfiguration.deleteUsers();
     }

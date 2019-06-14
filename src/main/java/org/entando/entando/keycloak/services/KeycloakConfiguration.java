@@ -2,6 +2,7 @@ package org.entando.entando.keycloak.services;
 
 public class KeycloakConfiguration {
 
+    private boolean enabled;
     private String authUrl;
     private String realm;
     private String clientId;
@@ -59,5 +60,13 @@ public class KeycloakConfiguration {
 
     public void setDefaultAuthorizations(final String defaultAuthorizations) {
         this.defaultAuthorizations = defaultAuthorizations;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
     }
 }

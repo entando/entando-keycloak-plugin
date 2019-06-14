@@ -9,31 +9,58 @@
 
     <bean id="keycloakConfiguration"
           class="org.entando.entando.keycloak.services.KeycloakConfiguration">
-        <property name="authUrl">
-            <value>${keycloak.authUrl}</value>
-        </property>
-        <property name="realm">
-            <value>${keycloak.realm}</value>
-        </property>
-        <property name="clientId">
-            <value>${keycloak.clientId}</value>
-        </property>
-        <property name="clientSecret">
-            <value>${keycloak.clientSecret}</value>
-        </property>
-        <property name="secureUris">
-            <value>${keycloak.secureUris:}</value>
-        </property>
-        <property name="defaultAuthorizations">
-            <value>${keycloak.authenticated.user.default.authorizations:}</value>
-        </property>
+        <property name="enabled" value="${keycloak.enabled:false}" />
+        <property name="authUrl" value="${keycloak.authUrl:http://localhost:8081/auth}" />
+        <property name="realm" value="${keycloak.realm:entando}" />
+        <property name="clientId" value="${keycloak.clientId:entando-app}" />
+        <property name="clientSecret" value="${keycloak.clientSecret:}" />
+        <property name="secureUris" value="${keycloak.secureUris:}" />
+        <property name="defaultAuthorizations" value="${keycloak.authenticated.user.default.authorizations:}" />
     </bean>
 
     <bean id="keycloakService" class="org.entando.entando.keycloak.services.KeycloakService">
         <constructor-arg index="0" ref="keycloakConfiguration"/>
     </bean>
 
-    <bean id="AuthenticationProviderManager" primary="true" class="org.entando.entando.keycloak.services.AuthenticationProviderManager"/>
-    <bean id="UserManager" primary="true" class="org.entando.entando.keycloak.services.UserManager"/>
+    <bean id="AuthenticationProviderManager" primary="true" parent="abstractService"
+          class="org.entando.entando.keycloak.adapter.AuthenticationProviderManagerAdapter">
+
+        <constructor-arg index="0" ref="UserManager" />
+
+        <property name="authorizationManager" ref="AuthorizationManager" />
+        <property name="tokenManager" ref="OAuth2TokenManager" />
+
+        <property name="keycloakEnabled" value="${keycloak.enabled:false}" />
+    </bean>
+
+    <bean id="UserManager" primary="true" parent="abstractService"
+          class="org.entando.entando.keycloak.adapter.UserManagerAdapter">
+
+        <constructor-arg index="0" ref="AuthorizationManager" />
+        <constructor-arg index="1" ref="keycloakService" />
+        <constructor-arg index="2" ref="oidcService" />
+
+        <property name="userDAO" ref="UserDAO" />
+        <property name="configManager" ref="BaseConfigManager"/>
+
+        <property name="keycloakEnabled" value="${keycloak.enabled:false}" />
+    </bean>
+
+    <bean id="keycloakFilter" class="org.entando.entando.keycloak.filter.KeycloakFilter">
+        <constructor-arg index="0" ref="keycloakConfiguration" />
+        <constructor-arg index="1" ref="oidcService" />
+        <constructor-arg index="2" ref="AuthenticationProviderManager" />
+        <constructor-arg index="3" ref="keycloakAuthorizationManager" />
+    </bean>
+
+    <bean id="keycloakOauth2Interceptor" class="org.entando.entando.keycloak.interceptor.KeycloakOauth2Interceptor"/>
+
+    <bean id="entandoInterceptor" primary="true"
+          class="org.entando.entando.keycloak.adapter.EntandoOauth2InterceptorAdapter">
+        <property name="keycloakEnabled" value="${keycloak.enabled:false}" />
+    </bean>
+
+<!--    <bean id="AuthenticationProviderManager" primary="true" class="org.entando.entando.keycloak.services.AuthenticationProviderManager"/>-->
+<!--    <bean id="UserManager" primary="true" class="org.entando.entando.keycloak.services.UserManager"/>-->
 
 </beans>

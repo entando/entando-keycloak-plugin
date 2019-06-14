@@ -21,7 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Base64;
 
-@Service
+@Service("oidcService")
 public class OpenIDConnectService {
 
     private static final Logger log = LoggerFactory.getLogger(OpenIDConnectService.class);
