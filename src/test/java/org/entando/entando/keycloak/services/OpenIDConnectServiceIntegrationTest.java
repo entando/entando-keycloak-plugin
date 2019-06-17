@@ -33,8 +33,8 @@ public class OpenIDConnectServiceIntegrationTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
-        final KeycloakService keycloakService = new KeycloakService(configuration);
         oidcService = new OpenIDConnectService(configuration);
+        final KeycloakService keycloakService = new KeycloakService(configuration, oidcService);
         userManager = new KeycloakUserManager(authorizationManager, keycloakService, oidcService);
 
         KeycloakTestConfiguration.deleteUsers();

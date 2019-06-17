@@ -32,24 +32,6 @@ First add the `entando-keycloak-auth` dependency to your pom.xml
     <version>1.0.0-SNAPSHOT</version>
     <type>war</type>
 </dependency>
-
-<!-- </required-by dependency="org.keycloak:keycloak-admin-client"> -->
-<dependency>
-    <groupId>org.jboss.resteasy</groupId>
-    <artifactId>resteasy-client</artifactId>
-    <version>3.0.18.Final</version>
-</dependency>
-<dependency>
-    <groupId>org.jboss.resteasy</groupId>
-    <artifactId>resteasy-jaxrs</artifactId>
-    <version>3.0.18.Final</version>
-</dependency>
-<dependency>
-    <groupId>org.jboss.resteasy</groupId>
-    <artifactId>resteasy-jackson2-provider</artifactId>
-    <version>3.6.3.Final</version>
-</dependency>
-<!-- </required-by> -->
 ```
 
 #### Edit systemParams.properties
@@ -75,18 +57,6 @@ To enable the standard flow to keep sessions between Entando instances, please r
 https://github.com/entando/entando-keycloak-plugin/wiki/Enable-Standard-Flow-for-Keycloak-Login
 
 ## Known issues
-
-### entando-plugin-jpinfinispan
-
-There might be dependency issues with `entando-plugin-jpinfinispan`. In order to make it work along with this plugin, you have to add the following dependency to the `pom.xml` file.
-
-```xml
-<dependency>
-    <groupId>org.jboss.logging</groupId>
-    <artifactId>jboss-logging</artifactId>
-    <version>3.3.0.Final</version>
-</dependency>
-```
 
 ### org.apache.log4j.spi.LoggerFactory
 
