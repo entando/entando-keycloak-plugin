@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.entando.entando.keycloak.services.UserServiceIntegrationTest.activeUser;
+import static org.entando.entando.keycloak.services.UserManagerIntegrationTest.activeUser;
 
 public class OpenIDConnectServiceIntegrationTest {
 
@@ -27,35 +27,35 @@ public class OpenIDConnectServiceIntegrationTest {
     private IAuthorizationManager authorizationManager;
 
     private OpenIDConnectService oidcService;
-    private UserService userService;
+    private KeycloakUserManager userManager;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
-        final KeycloakService keycloakService = new KeycloakService(configuration);
         oidcService = new OpenIDConnectService(configuration);
-        userService = new UserService(authorizationManager, keycloakService, oidcService);
+        final KeycloakService keycloakService = new KeycloakService(configuration, oidcService);
+        userManager = new KeycloakUserManager(authorizationManager, keycloakService, oidcService);
 
         KeycloakTestConfiguration.deleteUsers();
     }
 
     @Test(expected = CredentialsExpiredException.class)
     public void testLoginWithExpiredCredentials() throws OidcException {
-        userService.addUser(activeUser(USERNAME, PASSWORD));
+        userManager.addUser(activeUser(USERNAME, PASSWORD));
         oidcService.login(USERNAME, PASSWORD);
     }
 
     @Test(expected = InvalidCredentialsException.class)
     public void testLoginWithInvalidCredentials() throws OidcException {
-        userService.addUser(activeUser(USERNAME, PASSWORD));
+        userManager.addUser(activeUser(USERNAME, PASSWORD));
         oidcService.login(USERNAME, "woodstock");
     }
 
     @Test
     public void testLoginSuccessfulAndTokenValidation() throws OidcException {
-        userService.addUser(activeUser(USERNAME, "woodstock"));
-        userService.updateUserPassword(USERNAME, PASSWORD);
+        userManager.addUser(activeUser(USERNAME, "woodstock"));
+        userManager.changePassword(USERNAME, PASSWORD);
         final AuthResponse response = oidcService.login(USERNAME, PASSWORD);
         assertThat(response.getAccessToken()).isNotEmpty();
 

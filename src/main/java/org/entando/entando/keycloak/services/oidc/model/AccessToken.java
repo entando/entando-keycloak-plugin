@@ -1,10 +1,17 @@
 package org.entando.entando.keycloak.services.oidc.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Map;
+
 public class AccessToken {
 
     private String name;
     private String username;
     private String email;
+
+    @JsonProperty("resource_access")
+    private Map<String, TokenRoles> resourceAccess;
 
     private boolean active;
 
@@ -45,4 +52,11 @@ public class AccessToken {
         this.active = active;
     }
 
+    public Map<String, TokenRoles> getResourceAccess() {
+        return resourceAccess;
+    }
+
+    public void setResourceAccess(final Map<String, TokenRoles> resourceAccess) {
+        this.resourceAccess = resourceAccess;
+    }
 }

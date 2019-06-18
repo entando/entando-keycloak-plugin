@@ -2,6 +2,8 @@ package org.entando.entando.keycloak;
 
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
 import org.entando.entando.keycloak.services.KeycloakService;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
+import org.entando.entando.keycloak.services.oidc.model.UserRepresentation;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -32,8 +34,9 @@ public class KeycloakTestConfiguration {
     }
 
     public static void deleteUsers() {
-        final UsersResource users = keycloakService.getRealmResource().users();
-        users.list().forEach(user -> users.delete(user.getId()));
+        keycloakService.listUsers().stream()
+                .map(UserRepresentation::getId)
+                .forEach(keycloakService::removeUser);
     }
 
     private static KeycloakService create() {
@@ -52,7 +55,9 @@ public class KeycloakTestConfiguration {
         configuration.setRealm(REALM_NAME);
         configuration.setClientSecret(secret);
 
-        keycloakService = new KeycloakService(configuration);
+        final OpenIDConnectService oidcService = new OpenIDConnectService(configuration);
+
+        keycloakService = new KeycloakService(configuration, oidcService);
         return keycloakService;
     }
 

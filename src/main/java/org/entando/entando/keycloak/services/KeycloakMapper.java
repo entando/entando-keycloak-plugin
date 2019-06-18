@@ -1,8 +1,7 @@
 package org.entando.entando.keycloak.services;
 
 import com.agiletec.aps.system.services.user.User;
-import org.entando.entando.aps.system.services.user.model.UserDto;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.entando.entando.keycloak.services.oidc.model.UserRepresentation;
 
 import static java.util.Optional.ofNullable;
 
@@ -15,10 +14,6 @@ class KeycloakMapper {
         user.setDisabled(!userRepresentation.isEnabled());
         user.setUsername(userRepresentation.getUsername());
         return user;
-    }
-
-    static UserDto convertUser(final UserRepresentation userRepresentation) {
-        return new UserDto(convertUserDetails(userRepresentation));
     }
 
     private static User newUserCredentialsExpired() {
