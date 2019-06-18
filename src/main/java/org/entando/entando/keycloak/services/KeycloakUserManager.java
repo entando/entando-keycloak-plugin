@@ -163,7 +163,7 @@ public class KeycloakUserManager implements IUserManager {
     }
 
     private UserRepresentation getUserRepresentation(final String username) {
-        return keycloakService.listUsers().stream()
+        return keycloakService.listUsers(username).stream()
                 .filter(user -> user.getUsername().equals(username))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", username));
