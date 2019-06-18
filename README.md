@@ -34,6 +34,21 @@ First add the `entando-keycloak-auth` dependency to your pom.xml
 </dependency>
 ```
 
+### Edit web.xml
+To Oauth2 work properly, we have to replace the context
+```xml
+<servlet>
+    <servlet-name>springDispatcher</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+-        <param-value>classpath:spring/web/servlet-context.xml</param-value>
++        <param-value>classpath:spring/web/servlet-context-keycloak.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+</servlet>
+```
+
 #### Edit systemParams.properties
 
 Then you have to open the `systemParams.properties` to add keycloak configuration
