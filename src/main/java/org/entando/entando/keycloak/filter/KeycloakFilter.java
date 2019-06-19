@@ -1,12 +1,14 @@
 package org.entando.entando.keycloak.filter;
 
 import com.agiletec.aps.system.SystemConstants;
+import com.agiletec.aps.system.exception.ApsSystemException;
+import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.KeycloakWiki;
 import org.entando.entando.aps.system.exception.RestServerError;
-import org.entando.entando.keycloak.services.AuthenticationProviderManager;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
+import org.entando.entando.keycloak.services.KeycloakConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
@@ -17,7 +19,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -28,17 +35,20 @@ import static org.entando.entando.KeycloakWiki.wiki;
 
 public class KeycloakFilter implements Filter {
 
+    private final KeycloakConfiguration configuration;
     private final OpenIDConnectService oidcService;
-    private final AuthenticationProviderManager providerManager;
+    private final IAuthenticationProviderManager providerManager;
     private final KeycloakAuthorizationManager keycloakGroupManager;
 
     private static final String SESSION_PARAM_STATE = "keycloak-plugin-state";
     private static final String SESSION_PARAM_REDIRECT = "keycloak-plugin-redirectTo";
     private static final Logger log = LoggerFactory.getLogger(KeycloakFilter.class);
 
-    public KeycloakFilter(final OpenIDConnectService oidcService,
-                          final AuthenticationProviderManager providerManager,
+    public KeycloakFilter(final KeycloakConfiguration configuration,
+                          final OpenIDConnectService oidcService,
+                          final IAuthenticationProviderManager providerManager,
                           final KeycloakAuthorizationManager keycloakGroupManager) {
+        this.configuration = configuration;
         this.oidcService = oidcService;
         this.providerManager = providerManager;
         this.keycloakGroupManager = keycloakGroupManager;
@@ -48,6 +58,11 @@ public class KeycloakFilter implements Filter {
     public void doFilter(final ServletRequest servletRequest,
                          final ServletResponse servletResponse,
                          final FilterChain chain) throws IOException, ServletException {
+        if (!configuration.isEnabled()) {
+            chain.doFilter(servletRequest, servletResponse);
+            return;
+        }
+
         log.info("performing action on filter");
 
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -123,6 +138,8 @@ public class KeycloakFilter implements Filter {
                     }
                 }
                 throw new RestServerError("Unable to validate token", e);
+            } catch (ApsSystemException e) {
+                throw new RestServerError("Unable to find user", e);
             }
 
             redirect(request, response, session);

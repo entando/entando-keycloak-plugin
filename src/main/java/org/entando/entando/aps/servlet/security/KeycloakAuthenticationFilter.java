@@ -2,12 +2,19 @@ package org.entando.entando.aps.servlet.security;
 
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.exception.ApsSystemException;
+import com.agiletec.aps.system.services.authorization.Authorization;
+import com.agiletec.aps.system.services.role.Role;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
+import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
-import org.entando.entando.keycloak.services.UserManager;
+import org.entando.entando.keycloak.services.KeycloakConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
+import org.entando.entando.keycloak.services.oidc.model.TokenRoles;
+import org.entando.entando.web.common.model.RestError;
+import org.entando.entando.web.common.model.RestResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.NonceExpiredException;
 import org.springframework.stereotype.Service;
 
@@ -27,23 +35,31 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+
+import static java.util.Optional.ofNullable;
 
 @Service
-public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessingFilter implements AuthenticationFailureHandler {
 
     private static final Logger log = LoggerFactory.getLogger(KeycloakAuthenticationFilter.class);
 
-    private final UserManager userManager;
+    private final ObjectMapper objectMapper;
+    private final KeycloakConfiguration configuration;
+    private final IUserManager userManager;
     private final OpenIDConnectService oidcService;
     private final IAuthenticationProviderManager authenticationProviderManager;
     private final KeycloakAuthorizationManager keycloakGroupManager;
 
     @Autowired
-    public KeycloakAuthenticationFilter(final UserManager userManager,
+    public KeycloakAuthenticationFilter(final KeycloakConfiguration configuration,
+                                        final IUserManager userManager,
                                         final OpenIDConnectService oidcService,
                                         final IAuthenticationProviderManager authenticationProviderManager,
                                         final KeycloakAuthorizationManager keycloakGroupManager) {
         super("/api/**");
+        this.objectMapper = new ObjectMapper();
+        this.configuration = configuration;
         this.keycloakGroupManager = keycloakGroupManager;
         this.setAuthenticationManager(authenticationProviderManager);
         this.userManager = userManager;
@@ -80,6 +96,11 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
             final UserDetails user = authenticationProviderManager.getUser(accessToken.getUsername());
             final UserAuthentication userAuthentication = new UserAuthentication(user);
 
+            ofNullable(accessToken.getResourceAccess())
+                    .map(access -> access.get(configuration.getClientId()))
+                    .map(TokenRoles::getRoles)
+                    .ifPresent(permissions -> addAuthorizations(permissions, user));
+
             SecurityContextHolder.getContext().setAuthentication(userAuthentication);
             saveUserOnSession(request, user);
 
@@ -91,6 +112,13 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
             log.error("System exception", e);
             throw new InsufficientAuthenticationException("error parsing OAuth parameters");
         }
+    }
+
+    private void addAuthorizations(final List<String> permissions, final UserDetails user) {
+        final Role role = new Role();
+        role.setName("keycloak");
+        role.getPermissions().addAll(permissions);
+        user.addAuthorization(new Authorization(null, role));
     }
 
     private void saveUserOnSession(final HttpServletRequest request, final UserDetails guestUser) {
@@ -109,7 +137,19 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
     @Override
     protected void unsuccessfulAuthentication(final HttpServletRequest request,
                                               final HttpServletResponse response,
-                                              final AuthenticationException failed) throws IOException, ServletException {
-        super.unsuccessfulAuthentication(request, response, failed);
+                                              final AuthenticationException failed) throws IOException {
+        this.onAuthenticationFailure(request, response, failed);
+    }
+
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        AuthenticationException exception) throws IOException {
+        final RestResponse<Void, Void> restResponse = new RestResponse<>(null, null);
+        restResponse.addError(new RestError(HttpStatus.UNAUTHORIZED.toString(), exception.getMessage()));
+
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.addHeader("Content-Type", "application/json");
+        response.getOutputStream().println(objectMapper.writeValueAsString(restResponse));
     }
 }

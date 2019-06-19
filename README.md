@@ -11,11 +11,12 @@ Keycloak Integration for Entando Core - Gives SSO capabilities and also has User
 This plugin doesn't come with Role and Group management, because Entando Core roles/groups model isn't compatible with Keycloak. That means that even with the same users across multiple Entando Instances, the role and group mappings have to be configured on each instance.
 
 ## Properties
->- `keycloak.authUrl`: It's the Keycloak auth url (Example: `https://is.yourdomain.com/auth`)
->- `keycloak.realm`: The keycloak realm (See https://www.keycloak.org/docs/3.2/server_admin/topics/overview/concepts.html)
->- `keycloak.clientId`: The keycloak confidential client id
->- `keycloak.clientSecret`: The secret from the keycloak client
->- `keycloak.publicClientId`: The second keycloak client, this one must be public
+>- `keycloak.enabled`: Enables this plugin. (The default is `false`)
+>- `keycloak.authUrl`: It's the Keycloak auth url. Example: `https://is.yourdomain.com/auth`. (The default is `http://localhost:8081/auth`)
+>- `keycloak.realm`: The keycloak realm. See https://www.keycloak.org/docs/3.2/server_admin/topics/overview/concepts.html . (The default is `entando`)
+>- `keycloak.clientId`: The keycloak confidential client id. (The default is `entando-app`)
+>- `keycloak.clientSecret`: The secret from the keycloak client. (The default is `<blank>`)
+>- `keycloak.publicClientId`: The second keycloak client, this one must be public. (The default is `entando-web`)
 >- `keycloak.secureUris`: **[OPTIONAL]** Use if you want to secure an endpoint. Works with wildcards, comma separated.
 >- `keycloak.authenticated.user.default.authorizations`: **[OPTIONAL]** Use if you want to automatically assign `group:role` to any user that logs in, comma separated. Example: `administrators:admin,readers`
 
@@ -31,24 +32,23 @@ First add the `entando-keycloak-auth` dependency to your pom.xml
     <version>1.0.0-SNAPSHOT</version>
     <type>war</type>
 </dependency>
+```
 
-<!-- </required-by dependency="org.keycloak:keycloak-admin-client"> -->
-<dependency>
-    <groupId>org.jboss.resteasy</groupId>
-    <artifactId>resteasy-client</artifactId>
-    <version>3.0.18.Final</version>
-</dependency>
-<dependency>
-    <groupId>org.jboss.resteasy</groupId>
-    <artifactId>resteasy-jaxrs</artifactId>
-    <version>3.0.18.Final</version>
-</dependency>
-<dependency>
-    <groupId>org.jboss.resteasy</groupId>
-    <artifactId>resteasy-jackson2-provider</artifactId>
-    <version>3.6.3.Final</version>
-</dependency>
-<!-- </required-by> -->
+### Edit web.xml
+To Oauth2 work properly, we have to replace the springDispatcher contextConfigLocation by replacing the regular `classpath:spring/web/servlet-context.xml` entry with the keycloak one `classpath:spring/web/servlet-context-keycloak.xml`,
+
+Here what it should look like:
+
+```xml
+<servlet>
+    <servlet-name>springDispatcher</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:spring/web/servlet-context-keycloak.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+</servlet>
 ```
 
 #### Edit systemParams.properties
@@ -56,6 +56,7 @@ First add the `entando-keycloak-auth` dependency to your pom.xml
 Then you have to open the `systemParams.properties` to add keycloak configuration
 
 ```properties
+keycloak.enabled=true
 keycloak.authUrl=${KEYCLOAK_AUTH_URL:http://localhost:8081/auth}
 keycloak.realm=${KEYCLOAK_REALM:entando-development}
 keycloak.clientId=${KEYCLOAK_CLIENT_ID:entando-core}
@@ -63,18 +64,6 @@ keycloak.clientSecret=${KEYCLOAK_CLIENT_SECRET:930837f0-95b2-4eeb-b303-82a56cac7
 keycloak.publicClientId=${KEYCLOAK_PUBLIC_CLIENT_ID:entando-web}
 keycloak.secureUris=/api/plugins/cms/contents/*/model/*,/api/pwa/notifications/*
 keycloak.authenticated.user.default.authorizations=administrators:admin,readers
-```
-
-#### Edit web.xml
-
-And finally you have to change the configuration on `web.xml` from
-```
-classpath:spring/web/servlet-context.xml
-```
-
-To 
-```
-classpath:spring/web/servlet-context-keycloak.xml
 ```
 
 ## Keycloak Setup
@@ -85,18 +74,6 @@ To enable the standard flow to keep sessions between Entando instances, please r
 https://github.com/entando/entando-keycloak-plugin/wiki/Enable-Standard-Flow-for-Keycloak-Login
 
 ## Known issues
-
-### entando-plugin-jpinfinispan
-
-There might be dependency issues with `entando-plugin-jpinfinispan`. In order to make it work along with this plugin, you have to add the following dependency to the `pom.xml` file.
-
-```xml
-<dependency>
-    <groupId>org.jboss.logging</groupId>
-    <artifactId>jboss-logging</artifactId>
-    <version>3.3.0.Final</version>
-</dependency>
-```
 
 ### org.apache.log4j.spi.LoggerFactory
 

@@ -1,5 +1,6 @@
 package org.entando.entando.keycloak.services;
 
+import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,20 +14,19 @@ import static org.mockito.Mockito.*;
 
 public class AuthenticationProviderManagerTest {
 
-    @Mock private UserManager userManager;
+    @Mock private KeycloakUserManager userManager;
     @Mock private UserDetails userDetails;
 
-    private AuthenticationProviderManager manager;
+    private KeycloakAuthenticationProviderManager manager;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        manager = new AuthenticationProviderManager();
-        manager.setUserManager(userManager);
+        manager = new KeycloakAuthenticationProviderManager(userManager);
     }
 
     @Test
-    public void testGetUser() {
+    public void testGetUser() throws ApsSystemException {
         when(userManager.getUser(anyString())).thenReturn(userDetails);
         final UserDetails user = manager.getUser("admin");
         verify(userManager, times(1)).getUser(eq("admin"));
@@ -34,7 +34,7 @@ public class AuthenticationProviderManagerTest {
     }
 
     @Test
-    public void testGetUserWithPassword() {
+    public void testGetUserWithPassword() throws ApsSystemException {
         when(userManager.getUser(anyString(), anyString())).thenReturn(userDetails);
         final UserDetails user = manager.getUser("admin", "password");
         verify(userManager, times(1)).getUser(eq("admin"), eq("password"));
