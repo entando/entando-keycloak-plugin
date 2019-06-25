@@ -14,6 +14,7 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class KeycloakTestConfiguration {
             realm.toRepresentation();
             final List<ClientRepresentation> id = realm.clients().findByClientId(CLIENT_ID);
             return realm.clients().get(id.get(0).getId()).getSecret().getValue();
-        } catch (Exception e) {
+        } catch (final NotFoundException e) {
             return createRealm(keycloak);
         }
     }
