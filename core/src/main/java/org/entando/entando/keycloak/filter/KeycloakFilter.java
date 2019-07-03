@@ -5,12 +5,14 @@ import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.KeycloakWiki;
 import org.entando.entando.aps.servlet.security.GuestAuthentication;
 import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
+import org.entando.entando.keycloak.services.KeycloakJson;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
@@ -43,6 +45,8 @@ public class KeycloakFilter implements Filter {
     private final IAuthenticationProviderManager providerManager;
     private final KeycloakAuthorizationManager keycloakGroupManager;
     private final IUserManager userManager;
+    private final ObjectMapper objectMapper;
+    private final KeycloakJson keycloakJson;
 
     private static final String SESSION_PARAM_STATE = "keycloak-plugin-state";
     private static final String SESSION_PARAM_REDIRECT = "keycloak-plugin-redirectTo";
@@ -60,6 +64,8 @@ public class KeycloakFilter implements Filter {
         this.providerManager = providerManager;
         this.keycloakGroupManager = keycloakGroupManager;
         this.userManager = userManager;
+        this.objectMapper = new ObjectMapper();
+        this.keycloakJson = new KeycloakJson(configuration);
     }
 
     @Override
@@ -71,8 +77,6 @@ public class KeycloakFilter implements Filter {
             return;
         }
 
-        log.info("performing action on filter");
-
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
         final HttpServletResponse response = (HttpServletResponse) servletResponse;
         final HttpSession session = request.getSession();
@@ -82,13 +86,25 @@ public class KeycloakFilter implements Filter {
             invalidateSession(request);
         }
 
-        if ("/do/login".equals(request.getServletPath()) || "/do/login.action".equals(request.getServletPath())) {
-            doLogin(request, response, chain);
-        } else if ("/do/logout.action".equals(request.getServletPath())) {
-            doLogout(request, response);
-        } else {
-            chain.doFilter(request, response);
+        switch (request.getServletPath()) {
+            case "/do/login":
+            case "/do/login.action":
+                doLogin(request, response, chain);
+                break;
+            case "/do/logout.action":
+                doLogout(request, response);
+                break;
+            case "/keycloak.json":
+                returnKeycloakJson(response);
+                break;
+            default:
+                chain.doFilter(request, response);
         }
+    }
+
+    private void returnKeycloakJson(final HttpServletResponse response) throws IOException {
+        response.setHeader("Content-Type", "application/json");
+        objectMapper.writeValue(response.getOutputStream(), keycloakJson);
     }
 
     private boolean isAccessTokenValid(final String accessToken) {
