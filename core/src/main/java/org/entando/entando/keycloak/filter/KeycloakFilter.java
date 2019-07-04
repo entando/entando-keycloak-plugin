@@ -48,10 +48,11 @@ public class KeycloakFilter implements Filter {
     private final ObjectMapper objectMapper;
     private final KeycloakJson keycloakJson;
 
-    private static final String SESSION_PARAM_STATE = "keycloak-plugin-state";
-    private static final String SESSION_PARAM_REDIRECT = "keycloak-plugin-redirectTo";
-    private static final String SESSION_PARAM_ACCESS_TOKEN = "keycloak-plugin-access-token";
-    private static final String SESSION_PARAM_REFRESH_TOKEN = "keycloak-plugin-refresh-token";
+    public static final String SESSION_PARAM_STATE = "keycloak-plugin-state";
+    public static final String SESSION_PARAM_REDIRECT = "keycloak-plugin-redirectTo";
+    public static final String SESSION_PARAM_ACCESS_TOKEN = "keycloak-plugin-access-token";
+    public static final String SESSION_PARAM_REFRESH_TOKEN = "keycloak-plugin-refresh-token";
+
     private static final Logger log = LoggerFactory.getLogger(KeycloakFilter.class);
 
     public KeycloakFilter(final KeycloakConfiguration configuration,
@@ -91,6 +92,7 @@ public class KeycloakFilter implements Filter {
             case "/do/login.action":
                 doLogin(request, response, chain);
                 break;
+            case "/do/logout":
             case "/do/logout.action":
                 doLogout(request, response);
                 break;
@@ -243,9 +245,9 @@ public class KeycloakFilter implements Filter {
         }
     }
 
-    private void saveUserOnSession(final HttpServletRequest request, final UserDetails guestUser) {
-        request.getSession().setAttribute("user", guestUser);
-        request.getSession().setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, guestUser);
+    private void saveUserOnSession(final HttpServletRequest request, final UserDetails user) {
+        request.getSession().setAttribute("user", user);
+        request.getSession().setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, user);
     }
 
     private void redirect(final HttpServletRequest request, final HttpServletResponse response, final HttpSession session) throws IOException {
