@@ -14,6 +14,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.entando.entando.keycloak.services.UserManagerIntegrationTest.activeUser;
@@ -61,6 +64,35 @@ public class OpenIDConnectServiceIntegrationTest {
 
         final ResponseEntity<AccessToken> validationResponse = oidcService.validateToken(response.getAccessToken());
         assertThat(validationResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        final ResponseEntity<AuthResponse> refreshTokenResponse = oidcService.refreshToken(response.getRefreshToken());
+        assertThat(refreshTokenResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(refreshTokenResponse.getBody()).isNotNull();
+        assertThat(refreshTokenResponse.getBody().getAccessToken()).isNotEmpty();
+    }
+
+    @Test
+    public void testLoginSuccessfulAndTokenRevoked() throws OidcException {
+        userManager.addUser(activeUser(USERNAME, "woodstock"));
+        userManager.changePassword(USERNAME, PASSWORD);
+
+        final AuthResponse response = oidcService.login(USERNAME, PASSWORD);
+        assertThat(response.getAccessToken()).isNotEmpty();
+
+        KeycloakTestConfiguration.logoutAllSessions();
+
+        final ResponseEntity<AccessToken> validationResponse = oidcService.validateToken(response.getAccessToken());
+        assertThat(validationResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(validationResponse.getBody()).isNotNull();
+        assertThat(validationResponse.getBody().isActive()).isFalse();
+
+        final CompletableFuture<Void> future = CompletableFuture
+                .runAsync(() -> oidcService.refreshToken(response.getRefreshToken()));
+        while(!future.isDone());
+        assertThat(future)
+                .hasFailedWithThrowableThat()
+                .isInstanceOf(HttpClientErrorException.class)
+                .withFailMessage("400 Bad Request");
     }
 
 }

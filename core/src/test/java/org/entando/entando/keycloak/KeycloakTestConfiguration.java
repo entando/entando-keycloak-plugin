@@ -28,6 +28,7 @@ public class KeycloakTestConfiguration {
 
     private static KeycloakService keycloakService;
     private static KeycloakConfiguration configuration;
+    private static Keycloak keycloak;
 
     public static KeycloakConfiguration getConfiguration() {
         if (configuration == null) create();
@@ -40,8 +41,12 @@ public class KeycloakTestConfiguration {
                 .forEach(keycloakService::removeUser);
     }
 
-    private static KeycloakService create() {
-        final Keycloak keycloak = KeycloakBuilder.builder()
+    public static void logoutAllSessions() {
+        keycloak.realms().realm(REALM_NAME).logoutAll();
+    }
+
+    private static void create() {
+        keycloak = KeycloakBuilder.builder()
                 .serverUrl(BASE_URL)
                 .grantType(OAuth2Constants.PASSWORD)
                 .realm("master")
@@ -49,6 +54,7 @@ public class KeycloakTestConfiguration {
                 .username("admin")
                 .password("qwe123")
                 .build();
+
         final String secret = getClientSecret(keycloak);
         configuration = new KeycloakConfiguration();
         configuration.setAuthUrl(BASE_URL);
@@ -59,7 +65,6 @@ public class KeycloakTestConfiguration {
         final OpenIDConnectService oidcService = new OpenIDConnectService(configuration);
 
         keycloakService = new KeycloakService(configuration, oidcService);
-        return keycloakService;
     }
 
     private static void assignRoleRealmAdmin(final RealmResource resource, final ClientResource clientResource) {
