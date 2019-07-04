@@ -5,6 +5,9 @@ import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
+import com.jayway.jsonpath.JsonPath;
+import org.assertj.core.api.AbstractBooleanAssert;
+import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
@@ -22,11 +25,15 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.StringWriter;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -333,6 +340,59 @@ public class KeycloakFilterTest {
         verify(session, times(1)).setAttribute(eq("user"), same(userDetails));
         verify(session, times(1)).setAttribute(eq(SystemConstants.SESSIONPARAM_CURRENT_USER), same(userDetails));
         verify(session, times(1)).setAttribute(eq(KeycloakFilter.SESSION_PARAM_ACCESS_TOKEN), isNull());
+    }
+
+    @Test
+    public void testKeycloakJsonEndpoint() throws IOException, ServletException {
+        final String path = "/keycloak.json";
+        final String endpoint = "https://dev.entando.org/entando-app" + path;
+
+        when(configuration.isEnabled()).thenReturn(true);
+        when(request.getServletPath()).thenReturn(path);
+        when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
+
+        final StringWriter writer = new StringWriter();
+        when(response.getOutputStream()).thenReturn(new ServletOutputStreamWrapper(writer));
+
+        keycloakFilter.doFilter(request, response, filterChain);
+
+        verify(response, times(1)).setHeader(eq("Content-Type"), eq("application/json"));
+
+        final String json = writer.toString();
+
+        assertJsonString(json, "$.realm").isEqualTo(configuration.getRealm());
+        assertJsonString(json, "$.auth-server-url").isEqualTo(configuration.getAuthUrl());
+        assertJsonString(json, "$.resource").isEqualTo(configuration.getPublicClientId());
+        assertJsonString(json, "$.ssl-required").isEqualTo("external");
+        assertJsonBoolean(json, "$.public-client").isTrue();
+    }
+
+    static class ServletOutputStreamWrapper extends ServletOutputStream {
+        private final StringWriter writer;
+        private ServletOutputStreamWrapper(final StringWriter aWriter) {
+            this.writer = aWriter;
+        }
+
+        @Override
+        public void write(int aByte) {
+            this.writer.write(aByte);
+        }
+
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+
+        @Override
+        public void setWriteListener(final WriteListener writeListener) {}
+    }
+
+    private AbstractCharSequenceAssert assertJsonString(final String json, final String path) {
+        return assertThat((String) JsonPath.read(json, path));
+    }
+
+    private AbstractBooleanAssert assertJsonBoolean(final String json, final String path) {
+        return assertThat((Boolean) JsonPath.read(json, path));
     }
 
 }
