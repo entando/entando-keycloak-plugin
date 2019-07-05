@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 docker-compose -f docker-compose-cicd.yml build
 docker-compose -f docker-compose-cicd.yml up -d keycloak
 docker-compose -f docker-compose-cicd.yml up entando-keycloak-test
