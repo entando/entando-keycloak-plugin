@@ -19,9 +19,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.entando.entando.keycloak.services.UserManagerIntegrationTest.activeUser;
+import static org.entando.entando.keycloak.services.UserManagerIT.activeUser;
 
-public class OpenIDConnectServiceIntegrationTest {
+public class OpenIDConnectServiceIT {
 
     private static final String USERNAME = "iddqd";
     private static final String PASSWORD = "idkfa";

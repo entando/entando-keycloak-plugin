@@ -4,7 +4,6 @@ import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.web.user.model.UserPasswordRequest;
@@ -19,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 
-public class UserManagerIntegrationTest {
+public class UserManagerIT {
 
     private static final String USERNAME = "marine";
 
@@ -149,7 +148,7 @@ public class UserManagerIntegrationTest {
         assertThat(userManager.getUser(USERNAME, "qwer1234")).isNull();
     }
 
-    @Test(expected = RestServerError.class)
+    @Test(expected = RuntimeException.class)
     public void testGetUserDetailsException() throws ApsSystemException {
         userManager.addUser(activeUser());
         doThrow(new ApsSystemException(USERNAME)).when(authorizationManager).getUserAuthorizations(anyString());
