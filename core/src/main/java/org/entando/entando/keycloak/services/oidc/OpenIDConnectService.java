@@ -131,6 +131,17 @@ public class OpenIDConnectService {
         return new HttpEntity<>(body, headers);
     }
 
+    private HttpEntity<MultiValueMap<String, String>> createRefreshTokenRequest(final String refreshToken) {
+        final MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "refresh_token");
+        body.add("refresh_token", refreshToken);
+
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.add("Authorization", "Basic " + authToken);
+        return new HttpEntity<>(body, headers);
+    }
+
     private HttpEntity<MultiValueMap<String, String>> createApiAuthenticationRequest() {
         final MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
@@ -146,6 +157,13 @@ public class OpenIDConnectService {
         final HttpEntity<MultiValueMap<String, String>> req = createValidationRequest(bearerToken);
         final String url = String.format("%s/realms/%s/protocol/openid-connect/token/introspect", configuration.getAuthUrl(), configuration.getRealm());
         return restTemplate.postForEntity(url, req, AccessToken.class);
+    }
+
+    public ResponseEntity<AuthResponse> refreshToken(final String refreshToken) {
+        final RestTemplate restTemplate = new RestTemplate();
+        final HttpEntity<MultiValueMap<String, String>> req = createRefreshTokenRequest(refreshToken);
+        final String url = String.format("%s/realms/%s/protocol/openid-connect/token", configuration.getAuthUrl(), configuration.getRealm());
+        return restTemplate.postForEntity(url, req, AuthResponse.class);
     }
 
     public ResponseEntity<AuthResponse> requestToken(final String code, final String redirectUri) {

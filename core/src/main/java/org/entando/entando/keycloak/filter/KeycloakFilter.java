@@ -3,9 +3,11 @@ package org.entando.entando.keycloak.filter;
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
+import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.KeycloakWiki;
+import org.entando.entando.aps.servlet.security.GuestAuthentication;
 import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.Filter;
@@ -39,19 +42,24 @@ public class KeycloakFilter implements Filter {
     private final OpenIDConnectService oidcService;
     private final IAuthenticationProviderManager providerManager;
     private final KeycloakAuthorizationManager keycloakGroupManager;
+    private final IUserManager userManager;
 
     private static final String SESSION_PARAM_STATE = "keycloak-plugin-state";
     private static final String SESSION_PARAM_REDIRECT = "keycloak-plugin-redirectTo";
+    private static final String SESSION_PARAM_ACCESS_TOKEN = "keycloak-plugin-access-token";
+    private static final String SESSION_PARAM_REFRESH_TOKEN = "keycloak-plugin-refresh-token";
     private static final Logger log = LoggerFactory.getLogger(KeycloakFilter.class);
 
     public KeycloakFilter(final KeycloakConfiguration configuration,
                           final OpenIDConnectService oidcService,
                           final IAuthenticationProviderManager providerManager,
-                          final KeycloakAuthorizationManager keycloakGroupManager) {
+                          final KeycloakAuthorizationManager keycloakGroupManager,
+                          final IUserManager userManager) {
         this.configuration = configuration;
         this.oidcService = oidcService;
         this.providerManager = providerManager;
         this.keycloakGroupManager = keycloakGroupManager;
+        this.userManager = userManager;
     }
 
     @Override
@@ -67,12 +75,61 @@ public class KeycloakFilter implements Filter {
 
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
         final HttpServletResponse response = (HttpServletResponse) servletResponse;
+        final HttpSession session = request.getSession();
+        final String accessToken = (String) session.getAttribute(SESSION_PARAM_ACCESS_TOKEN);
+
+        if (accessToken != null && !isAccessTokenValid(accessToken) && !refreshToken(request)) {
+            invalidateSession(request);
+        }
 
         if ("/do/login".equals(request.getServletPath()) || "/do/login.action".equals(request.getServletPath())) {
             doLogin(request, response, chain);
         } else if ("/do/logout.action".equals(request.getServletPath())) {
             doLogout(request, response);
+        } else {
+            chain.doFilter(request, response);
         }
+    }
+
+    private boolean isAccessTokenValid(final String accessToken) {
+        final ResponseEntity<AccessToken> tokenResponse = oidcService.validateToken(accessToken);
+        return HttpStatus.OK.equals(tokenResponse.getStatusCode())
+                && tokenResponse.getBody() != null
+                && tokenResponse.getBody().isActive();
+    }
+
+    private boolean refreshToken(final HttpServletRequest request) {
+        final HttpSession session = request.getSession();
+        final String refreshToken = (String) session.getAttribute(SESSION_PARAM_REFRESH_TOKEN);
+
+        if (refreshToken != null) {
+            try {
+                final ResponseEntity<AuthResponse> refreshResponse = oidcService.refreshToken(refreshToken);
+                if (HttpStatus.OK.equals(refreshResponse.getStatusCode()) && refreshResponse.getBody() != null) {
+                    session.setAttribute(SESSION_PARAM_ACCESS_TOKEN, refreshResponse.getBody().getAccessToken());
+                    session.setAttribute(SESSION_PARAM_REFRESH_TOKEN, refreshResponse.getBody().getRefreshToken());
+                    return true;
+                }
+            } catch (HttpClientErrorException e) {
+                if (!HttpStatus.BAD_REQUEST.equals(e.getStatusCode())
+                        || e.getResponseBodyAsString() == null
+                        || !e.getResponseBodyAsString().contains("invalid_grant")) {
+                    log.error("Something unexpected returned while trying to refresh token, the response was [{}] {}",
+                            e.getStatusCode().toString(),
+                            e.getResponseBodyAsString());
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void invalidateSession(final HttpServletRequest request) {
+        final UserDetails guestUser = userManager.getGuestUser();
+        final GuestAuthentication guestAuthentication = new GuestAuthentication(guestUser);
+        SecurityContextHolder.getContext().setAuthentication(guestAuthentication);
+        saveUserOnSession(request, guestUser);
+        request.getSession().setAttribute(SESSION_PARAM_ACCESS_TOKEN, null);
     }
 
     private void doLogout(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
@@ -117,6 +174,8 @@ public class KeycloakFilter implements Filter {
                     throw new EntandoTokenException("invalid or expired token", request, "guest");
                 }
                 final UserDetails user = providerManager.getUser(tokenResponse.getBody().getUsername());
+                session.setAttribute(SESSION_PARAM_ACCESS_TOKEN, responseEntity.getBody().getAccessToken());
+                session.setAttribute(SESSION_PARAM_REFRESH_TOKEN, responseEntity.getBody().getRefreshToken());
 
                 keycloakGroupManager.processNewUser(user);
                 saveUserOnSession(request, user);
