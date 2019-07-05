@@ -13,6 +13,7 @@
         <property name="authUrl" value="${keycloak.authUrl:http://localhost:8081/auth}" />
         <property name="realm" value="${keycloak.realm:entando}" />
         <property name="clientId" value="${keycloak.clientId:entando-app}" />
+        <property name="publicClientId" value="${keycloak.publicClientId:entando-web}" />
         <property name="clientSecret" value="${keycloak.clientSecret:}" />
         <property name="secureUris" value="${keycloak.secureUris:}" />
         <property name="defaultAuthorizations" value="${keycloak.authenticated.user.default.authorizations:}" />
