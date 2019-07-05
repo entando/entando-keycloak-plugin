@@ -1,0 +1,34 @@
+version: '2.1'
+
+services:
+  keycloak:
+#    image: entando/keycloak
+    image: jboss/keycloak
+    hostname: keycloak
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: qwe123
+      DB_VENDOR: h2
+      PROXY_ADDRESS_FORWARDING: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 3s
+      timeout: 10s
+      retries: 30
+
+  entando-keycloak-test:
+    image: entando-keycloak-test
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MVN_COMMAND: ${MVN_COMMAND}
+    environment:
+      KEYCLOAK_AUTH_URL: http://keycloak:8080/auth
+      KEYCLOAK_REALM: entando-core-test
+      KEYCLOAK_CLIENT_ID: entando-core
+    depends_on:
+      keycloak:
+        condition: service_healthy
+
+

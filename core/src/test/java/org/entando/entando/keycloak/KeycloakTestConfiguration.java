@@ -19,10 +19,11 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 
 public class KeycloakTestConfiguration {
 
-    private static final String BASE_URL = "http://localhost:8081/auth";
+    private static final String BASE_URL = ofNullable(System.getenv("KEYCLOAK_AUTH_URL")).orElse("http://localhost:8081/auth");
     private static final String REALM_NAME = "entando-core-test";
     private static final String CLIENT_ID = "entando-core";
 

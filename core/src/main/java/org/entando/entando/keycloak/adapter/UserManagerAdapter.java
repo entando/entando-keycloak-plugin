@@ -96,13 +96,13 @@ public class UserManagerAdapter extends UserManager implements IUserManager {
         return keycloakEnabled ? keycloak.getGuestUser() : super.getGuestUser();
     }
 
-    public String encrypt(final String password) throws ApsSystemException {
-        return keycloakEnabled ? keycloak.encrypt(password) : super.encrypt(password);
-    }
-
-    public boolean isArgon2Encrypted(final String password) {
-        return keycloakEnabled ? keycloak.isArgon2Encrypted(password) : super.isArgon2Encrypted(password);
-    }
+//    public String encrypt(final String password) throws ApsSystemException {
+//        return keycloakEnabled ? keycloak.encrypt(password) : super.encrypt(password);
+//    }
+//
+//    public boolean isArgon2Encrypted(final String password) {
+//        return keycloakEnabled ? keycloak.isArgon2Encrypted(password) : super.isArgon2Encrypted(password);
+//    }
 
     public void setKeycloakEnabled(final boolean keycloakEnabled) {
         this.keycloakEnabled = keycloakEnabled;
