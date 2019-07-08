@@ -19,7 +19,7 @@
         <java.version>1.8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-
+        <skipIntegrationTests>true</skipIntegrationTests>
         <entando.version>5.2.0-SNAPSHOT</entando.version>
     </properties>
 
@@ -168,12 +168,16 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M3</version>
+                <configuration>
+                    <forkCount>1</forkCount>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.0.0-M3</version>
                 <configuration>
+                    <skip>${skipIntegrationTests}</skip>
                     <forkCount>1</forkCount>
                 </configuration>
                 <executions>
@@ -191,7 +195,7 @@
                 <version>0.8.3</version>
                 <configuration>
                     <excludes>
-                        <exclude>**/*EntandoAuthJavaApplication*.*</exclude>
+                        <exclude>**/KeycloakService.*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -201,7 +205,11 @@
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
-                </executions>
+                    <execution>
+                        <id>report</id>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                  </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
