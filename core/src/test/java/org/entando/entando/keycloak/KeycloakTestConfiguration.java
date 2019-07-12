@@ -14,19 +14,22 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 
 public class KeycloakTestConfiguration {
 
-    private static final String BASE_URL = "http://localhost:8081/auth";
+    private static final String BASE_URL = ofNullable(System.getenv("KEYCLOAK_AUTH_URL")).orElse("http://localhost:8081/auth");
     private static final String REALM_NAME = "entando-core-test";
     private static final String CLIENT_ID = "entando-core";
 
     private static KeycloakService keycloakService;
     private static KeycloakConfiguration configuration;
+    private static Keycloak keycloak;
 
     public static KeycloakConfiguration getConfiguration() {
         if (configuration == null) create();
@@ -39,8 +42,12 @@ public class KeycloakTestConfiguration {
                 .forEach(keycloakService::removeUser);
     }
 
-    private static KeycloakService create() {
-        final Keycloak keycloak = KeycloakBuilder.builder()
+    public static void logoutAllSessions() {
+        keycloak.realms().realm(REALM_NAME).logoutAll();
+    }
+
+    private static void create() {
+        keycloak = KeycloakBuilder.builder()
                 .serverUrl(BASE_URL)
                 .grantType(OAuth2Constants.PASSWORD)
                 .realm("master")
@@ -48,6 +55,7 @@ public class KeycloakTestConfiguration {
                 .username("admin")
                 .password("qwe123")
                 .build();
+
         final String secret = getClientSecret(keycloak);
         configuration = new KeycloakConfiguration();
         configuration.setAuthUrl(BASE_URL);
@@ -58,7 +66,6 @@ public class KeycloakTestConfiguration {
         final OpenIDConnectService oidcService = new OpenIDConnectService(configuration);
 
         keycloakService = new KeycloakService(configuration, oidcService);
-        return keycloakService;
     }
 
     private static void assignRoleRealmAdmin(final RealmResource resource, final ClientResource clientResource) {
@@ -73,7 +80,7 @@ public class KeycloakTestConfiguration {
             realm.toRepresentation();
             final List<ClientRepresentation> id = realm.clients().findByClientId(CLIENT_ID);
             return realm.clients().get(id.get(0).getId()).getSecret().getValue();
-        } catch (Exception e) {
+        } catch (final NotFoundException e) {
             return createRealm(keycloak);
         }
     }

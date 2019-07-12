@@ -1,21 +1,18 @@
 package org.entando.entando.keycloak.services;
 
 import com.agiletec.aps.system.exception.ApsSystemException;
-import com.agiletec.aps.system.services.authorization.Authorization;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.entando.entando.aps.system.exception.ResourceNotFoundException;
-import org.entando.entando.aps.system.exception.RestServerError;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
 import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.keycloak.services.oidc.model.UserRepresentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +22,6 @@ import static java.util.Optional.ofNullable;
 public class KeycloakUserManager implements IUserManager {
 
     private static final String ERRCODE_USER_NOT_FOUND = "1";
-    private static final Logger log = LoggerFactory.getLogger(KeycloakUserManager.class);
 
     private final IAuthorizationManager authorizationManager;
     private final KeycloakService keycloakService;
@@ -74,12 +70,15 @@ public class KeycloakUserManager implements IUserManager {
 
     @Override
     public void removeUser(final String username) {
-        keycloakService.removeUser(getUserRepresentation(username).getId());
+        final UserRepresentation userRep = getUserRepresentation(username)
+                .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", username));
+        keycloakService.removeUser(userRep.getId());
     }
 
     @Override
     public void updateUser(final UserDetails user) {
-        final UserRepresentation userRep = getUserRepresentation(user.getUsername());
+        final UserRepresentation userRep = getUserRepresentation(user.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", user.getUsername()));
         userRep.setEnabled(!user.isDisabled());
         ofNullable(user.getPassword()).ifPresent(password -> updateUserPassword(userRep, password, true));
         keycloakService.updateUser(userRep);
@@ -92,7 +91,8 @@ public class KeycloakUserManager implements IUserManager {
 
     @Override
     public void changePassword(final String username, final String password) {
-        final UserRepresentation user = getUserRepresentation(username);
+        final UserRepresentation user = getUserRepresentation(username)
+                .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", username));
         updateUserPassword(user, password, false);
     }
 
@@ -107,15 +107,18 @@ public class KeycloakUserManager implements IUserManager {
 
     @Override
     public UserDetails getUser(final String username) {
-        try {
-            final User userDetails = KeycloakMapper.convertUserDetails(getUserRepresentation(username));
-            final List<Authorization> authorizations = authorizationManager.getUserAuthorizations(username);
+        return getUserRepresentation(username)
+                .map(KeycloakMapper::convertUserDetails)
+                .map(this::getAuthorizations)
+                .orElse(null);
+    }
 
-            userDetails.setAuthorizations(authorizations);
-            return userDetails;
+    private UserDetails getAuthorizations(final User user) {
+        try {
+            user.setAuthorizations(authorizationManager.getUserAuthorizations(user.getUsername()));
+            return user;
         } catch (ApsSystemException e) {
-            log.error("Error in loading user {}", username, e);
-            throw new RestServerError("Error in loading user", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -154,11 +157,10 @@ public class KeycloakUserManager implements IUserManager {
         }
     }
 
-    private UserRepresentation getUserRepresentation(final String username) {
+    private Optional<UserRepresentation> getUserRepresentation(final String username) {
         return keycloakService.listUsers(username).stream()
                 .filter(user -> user.getUsername().equals(username))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException(ERRCODE_USER_NOT_FOUND, "user", username));
+                .findFirst();
     }
 
 }

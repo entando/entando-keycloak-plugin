@@ -51,6 +51,7 @@
         <constructor-arg index="1" ref="oidcService" />
         <constructor-arg index="2" ref="AuthenticationProviderManager" />
         <constructor-arg index="3" ref="keycloakAuthorizationManager" />
+        <constructor-arg index="4" ref="UserManager" />
     </bean>
 
     <bean id="keycloakOauth2Interceptor" class="org.entando.entando.keycloak.interceptor.KeycloakOauth2Interceptor"/>

@@ -5,9 +5,62 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.entando.entando</groupId>
-    <artifactId>entando-keycloak-auth</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <artifactId>entando-keycloak-parent</artifactId>
+    <version>5.2.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <licenses>
+        <license>
+            <name>GNU LESSER GENERAL PUBLIC LICENSE,  Version 2.1, February 1999</name>
+            <url>https://www.gnu.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>Entando Inc.</name>
+        <url>http://www.entando.com/</url>
+    </organization>
+    <developers>
+        <developer>
+            <id>s.marcelino</id>
+            <name>Sérgio Marcelino</name>
+            <email>s.marcelino@entando.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git@github.com:entando/entando-keycloak-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:entando/entando-keycloak-plugin.git</developerConnection>
+        <url>https://github.com/entando/entando-keycloak-plugin</url>
+        <tag>master</tag>
+    </scm>
+    <repositories>
+        <repository>
+            <id>snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>${maven.release.repository.id}</id>
+            <name>Releases</name>
+            <url>${maven.release.repository.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>${maven.snapshot.repository.id}</id>
+            <name>Snapshot</name>
+            <url>${maven.snapshot.repository.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <modules>
+        <module>core</module>
+        <module>plugin</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,104 +68,48 @@
         <java.version>1.8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.snapshot.repository.id>sonatype-nexus-snapshot</maven.snapshot.repository.id>
+        <maven.snapshot.repository.url>https://oss.sonatype.org/content/repositories/snapshots</maven.snapshot.repository.url>
+        <maven.relase.repository.id>sonatype-nexus-staging</maven.relase.repository.id>
+        <maven.release.repository.url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</maven.release.repository.url>
 
         <entando.version>5.2.0-SNAPSHOT</entando.version>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.entando.entando</groupId>
-            <artifactId>entando-engine</artifactId>
-            <version>${entando.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.cxf</groupId>
-                    <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.cxf</groupId>
-                    <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.entando.entando</groupId>
+                <artifactId>entando-engine</artifactId>
+                <version>${entando.version}</version>
+                <scope>provided</scope>
+            </dependency>
 
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-admin-client</artifactId>
-            <version>5.0.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- </required-by dependency="org.keycloak:keycloak-admin-client"> -->
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <version>3.0.18.Final</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-            <version>3.0.18.Final</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jackson2-provider</artifactId>
-            <version>3.6.3.Final</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- </required-by> -->
-
-        <!-- tests -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>2.15.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.4.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>3.1.0</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.1.1</version>
-                <configuration>
-                    <archiveClasses>true</archiveClasses>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                    <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <forkCount>0</forkCount>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>
