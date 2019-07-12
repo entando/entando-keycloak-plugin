@@ -142,14 +142,6 @@ public class KeycloakUserManager implements IUserManager {
         return user;
     }
 
-    public String encrypt(final String text) {
-        return null;
-    }
-
-    public boolean isArgon2Encrypted(final String encrypted) {
-        return true;
-    }
-
     private Stream<UserRepresentation> list(final String text) {
         final List<UserRepresentation> list = keycloakService.listUsers(text);
         // workaround to a bug on keycloak to not list Service Account Users

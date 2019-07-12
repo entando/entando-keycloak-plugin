@@ -10,12 +10,11 @@
     <bean id="keycloakConfiguration"
           class="org.entando.entando.keycloak.services.KeycloakConfiguration">
         <property name="enabled" value="${keycloak.enabled:false}" />
-        <property name="authUrl" value="${keycloak.authUrl:http://localhost:8081/auth}" />
+        <property name="authUrl" value="${keycloak.auth.url:http://localhost:8081/auth}" />
         <property name="realm" value="${keycloak.realm:entando}" />
-        <property name="clientId" value="${keycloak.clientId:entando-app}" />
-        <property name="publicClientId" value="${keycloak.publicClientId:entando-web}" />
-        <property name="clientSecret" value="${keycloak.clientSecret:}" />
-        <property name="secureUris" value="${keycloak.secureUris:}" />
+        <property name="clientId" value="${keycloak.client.id:entando-app}" />
+        <property name="clientSecret" value="${keycloak.client.secret:}" />
+        <property name="secureUris" value="${keycloak.secure.uris:}" />
         <property name="defaultAuthorizations" value="${keycloak.authenticated.user.default.authorizations:}" />
     </bean>
 
