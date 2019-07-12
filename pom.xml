@@ -16,7 +16,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
-        <entando.version>5.1.0</entando.version>
+        <entando.version>5.2.0-SNAPSHOT</entando.version>
     </properties>
 
     <dependencies>

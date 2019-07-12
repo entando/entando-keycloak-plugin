@@ -26,16 +26,16 @@
                     <value>${resourceDiskRootFolder}</value>
                 </entry>
                 <entry key="keycloakAuthUrl">
-                    <value>${keycloak.authUrl:http://localhost:8081/auth}</value>
+                    <value>${keycloak.auth.url:http://localhost:8081/auth}</value>
                 </entry>
                 <entry key="keycloakRealm">
                     <value>${keycloak.realm:entando}</value>
                 </entry>
                 <entry key="keycloakClientId">
-                    <value>${keycloak.clientId:entando-app}</value>
+                    <value>${keycloak.client.id:entando-app}</value>
                 </entry>
                 <entry key="keycloakPublicClientId">
-                    <value>${keycloak.publicClientId:entando-web}</value>
+                    <value>${keycloak.public.client.id:entando-web}</value>
                 </entry>
             </map>
         </property>

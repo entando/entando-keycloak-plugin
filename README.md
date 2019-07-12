@@ -12,12 +12,12 @@ This plugin doesn't come with Role and Group management, because Entando Core ro
 
 ## Properties
 >- `keycloak.enabled`: Enables this plugin. (The default is `false`)
->- `keycloak.authUrl`: It's the Keycloak auth url. Example: `https://is.yourdomain.com/auth`. (The default is `http://localhost:8081/auth`)
+>- `keycloak.auth.url`: It's the Keycloak auth url. Example: `https://is.yourdomain.com/auth`. (The default is `http://localhost:8081/auth`)
 >- `keycloak.realm`: The keycloak realm. See https://www.keycloak.org/docs/3.2/server_admin/topics/overview/concepts.html . (The default is `entando`)
->- `keycloak.clientId`: The keycloak confidential client id. (The default is `entando-app`)
->- `keycloak.clientSecret`: The secret from the keycloak client. (The default is `<blank>`)
->- `keycloak.publicClientId`: The second keycloak client, this one must be public. (The default is `entando-web`)
->- `keycloak.secureUris`: **[OPTIONAL]** Use if you want to secure an endpoint. Works with wildcards, comma separated.
+>- `keycloak.client.id`: The keycloak confidential client id. (The default is `entando-app`)
+>- `keycloak.client.secret`: The secret from the keycloak client. (The default is `<blank>`)
+>- `keycloak.public.client.id`: The second keycloak client, this one must be public. (The default is `entando-web`)
+>- `keycloak.secure.uris`: **[OPTIONAL]** Use if you want to secure an endpoint. Works with wildcards, comma separated.
 >- `keycloak.authenticated.user.default.authorizations`: **[OPTIONAL]** Use if you want to automatically assign `group:role` to any user that logs in, comma separated. Example: `administrators:admin,readers`
 
 ## Installing
@@ -57,12 +57,12 @@ Then you have to open the `systemParams.properties` to add keycloak configuratio
 
 ```properties
 keycloak.enabled=true
-keycloak.authUrl=${KEYCLOAK_AUTH_URL:http://localhost:8081/auth}
+keycloak.auth.url=${KEYCLOAK_AUTH_URL:http://localhost:8081/auth}
 keycloak.realm=${KEYCLOAK_REALM:entando-development}
-keycloak.clientId=${KEYCLOAK_CLIENT_ID:entando-core}
-keycloak.clientSecret=${KEYCLOAK_CLIENT_SECRET:930837f0-95b2-4eeb-b303-82a56cac76e6}
-keycloak.publicClientId=${KEYCLOAK_PUBLIC_CLIENT_ID:entando-web}
-keycloak.secureUris=/api/plugins/cms/contents/*/model/*,/api/pwa/notifications/*
+keycloak.client.id=${KEYCLOAK_CLIENT_ID:entando-core}
+keycloak.client.secret=${KEYCLOAK_CLIENT_SECRET:930837f0-95b2-4eeb-b303-82a56cac76e6}
+keycloak.public.client.id=${KEYCLOAK_PUBLIC_CLIENT_ID:entando-web}
+keycloak.secure.uris=/api/plugins/cms/contents/*/model/*,/api/pwa/notifications/*
 keycloak.authenticated.user.default.authorizations=administrators:admin,readers
 ```
 

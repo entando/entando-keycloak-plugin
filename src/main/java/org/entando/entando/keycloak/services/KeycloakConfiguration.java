@@ -11,7 +11,7 @@ public class KeycloakConfiguration {
     private String defaultAuthorizations;
 
     public String toString() {
-        return String.format("{authUrl=%s, realm=%s, clientId=%s, clientSecret=%s}", authUrl, realm, clientId, clientSecret);
+        return String.format("{auth.url=%s, realm=%s, client.id=%s, client.secret=%s}", authUrl, realm, clientId, clientSecret);
     }
 
     public String getAuthUrl() {
