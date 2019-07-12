@@ -14,6 +14,7 @@
         <property name="realm" value="${keycloak.realm:entando}" />
         <property name="clientId" value="${keycloak.client.id:entando-app}" />
         <property name="clientSecret" value="${keycloak.client.secret:}" />
+        <property name="publicClientId" value="${keycloak.public.client.id:entando-web}" />
         <property name="secureUris" value="${keycloak.secure.uris:}" />
         <property name="defaultAuthorizations" value="${keycloak.authenticated.user.default.authorizations:}" />
     </bean>
