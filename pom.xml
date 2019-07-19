@@ -6,7 +6,7 @@
 
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-parent</artifactId>
-    <version>5.2.0-SNAPSHOT</version>
+    <version>5.2.0</version>
     <packaging>pom</packaging>
     <licenses>
         <license>
@@ -30,7 +30,7 @@
         <connection>scm:git:git@github.com:entando/entando-keycloak-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:entando/entando-keycloak-plugin.git</developerConnection>
         <url>https://github.com/entando/entando-keycloak-plugin</url>
-        <tag>master</tag>
+        <tag>V5.2.0</tag>
     </scm>
     <repositories>
         <repository>
@@ -45,11 +45,68 @@
             </snapshots>
         </repository>
     </repositories>
+    <profiles>
+        <profile>
+            <id>release-to-maven-central</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>5.0.0</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skip>false</skip>
+                            <autoUpdate>true</autoUpdate>
+                            <format>XML</format>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <distributionManagement>
         <repository>
-            <id>${maven.release.repository.id}</id>
-            <name>Releases</name>
-            <url>${maven.release.repository.url}</url>
+            <id>sonatype-nexus-staging</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
         <snapshotRepository>
             <id>${maven.snapshot.repository.id}</id>
@@ -73,7 +130,7 @@
         <maven.relase.repository.id>sonatype-nexus-staging</maven.relase.repository.id>
         <maven.release.repository.url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</maven.release.repository.url>
 
-        <entando.version>5.2.0-SNAPSHOT</entando.version>
+        <entando.version>5.2.0</entando.version>
     </properties>
 
     <dependencyManagement>

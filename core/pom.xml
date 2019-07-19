@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.entando.entando</groupId>
         <artifactId>entando-keycloak-parent</artifactId>
-        <version>5.2.0-SNAPSHOT</version>
+        <version>5.2.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,7 +20,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <skipIntegrationTests>true</skipIntegrationTests>
-        <entando.version>5.2.0-SNAPSHOT</entando.version>
+        <entando.version>5.2.0</entando.version>
     </properties>
 
     <dependencies>
