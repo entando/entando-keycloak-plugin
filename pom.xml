@@ -9,6 +9,8 @@
     <version>5.2.0</version>
     <packaging>pom</packaging>
     <name>Entando Keycloak Plugin</name>
+    <description>Entando Keycloak plugin</description>
+    <url>http://www.entando.com/</url>
     <licenses>
         <license>
             <name>GNU LESSER GENERAL PUBLIC LICENSE,  Version 2.1, February 1999</name>
