@@ -8,6 +8,7 @@
     <artifactId>entando-keycloak-parent</artifactId>
     <version>5.2.0</version>
     <packaging>pom</packaging>
+    <name>Entando Keycloak Plugin</name>
     <licenses>
         <license>
             <name>GNU LESSER GENERAL PUBLIC LICENSE,  Version 2.1, February 1999</name>
