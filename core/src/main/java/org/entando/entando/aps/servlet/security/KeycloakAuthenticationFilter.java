@@ -71,7 +71,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
     public Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response) throws AuthenticationException {
         final String authorization = request.getHeader("Authorization");
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        if (authorization == null || !authorization.matches("^[Bb]earer .*")) {
             final UserDetails guestUser = userManager.getGuestUser();
             final GuestAuthentication guestAuthentication = new GuestAuthentication(guestUser);
             SecurityContextHolder.getContext().setAuthentication(guestAuthentication);
