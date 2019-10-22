@@ -159,7 +159,9 @@ public class KeycloakUserManager implements IUserManager {
 
     private Optional<UserRepresentation> getUserRepresentation(final String username) {
         List<UserRepresentation> list = keycloakService.listUsers(username);
-        if (list.size() > 1) {
+        if(list.isEmpty()){
+            throw new IllegalStateException(username + " not found in keycloak");
+        }else  if (list.size() > 1) {
             //TODO see if this is actually necessary
             return list.stream()
                     .filter(user -> user.getUsername().equals(username))
