@@ -1,23 +1,23 @@
 package org.entando.entando.keycloak.services;
 
+import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
+
 import com.agiletec.aps.system.exception.ApsSystemException;
+import com.agiletec.aps.system.services.authorization.AuthorizationManager;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.entando.entando.aps.system.exception.ResourceNotFoundException;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
 import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.keycloak.services.oidc.model.UserRepresentation;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.util.Collections.emptyList;
-import static java.util.Optional.ofNullable;
 
 public class KeycloakUserManager implements IUserManager {
 
@@ -28,8 +28,8 @@ public class KeycloakUserManager implements IUserManager {
     private final OpenIDConnectService oidcService;
 
     public KeycloakUserManager(final IAuthorizationManager authorizationManager,
-                               final KeycloakService keycloakService,
-                               final OpenIDConnectService oidcService) {
+            final KeycloakService keycloakService,
+            final OpenIDConnectService oidcService) {
         this.authorizationManager = authorizationManager;
         this.keycloakService = keycloakService;
         this.oidcService = oidcService;
@@ -158,9 +158,15 @@ public class KeycloakUserManager implements IUserManager {
     }
 
     private Optional<UserRepresentation> getUserRepresentation(final String username) {
-        return keycloakService.listUsers(username).stream()
-                .filter(user -> user.getUsername().equals(username))
-                .findFirst();
+        List<UserRepresentation> list = keycloakService.listUsers(username);
+        if (list.size() > 1) {
+            //TODO see if this is actually necessary
+            return list.stream()
+                    .filter(user -> user.getUsername().equals(username))
+                    .findFirst();
+        }else{
+            return list.stream().findFirst();
+        }
     }
 
 }
