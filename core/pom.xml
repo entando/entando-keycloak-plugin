@@ -152,7 +152,8 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <skip>false</skip>
+                            <!--NB!! we need to switch this back on - Ampie -->
+                            <skip>true</skip>
                             <autoUpdate>true</autoUpdate>
                             <format>XML</format>
                         </configuration>
