@@ -73,7 +73,7 @@
         <maven.relase.repository.id>sonatype-nexus-staging</maven.relase.repository.id>
         <maven.release.repository.url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</maven.release.repository.url>
 
-        <entando.version>5.2.0-SNAPSHOT</entando.version>
+        <entando.version>6.0.0-SNAPSHOT</entando.version>
     </properties>
 
     <dependencyManagement>
