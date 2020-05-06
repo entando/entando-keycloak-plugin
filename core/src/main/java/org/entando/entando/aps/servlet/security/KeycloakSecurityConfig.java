@@ -40,6 +40,7 @@ public class KeycloakSecurityConfig extends OAuth2SecurityConfiguration {
                     }
                 }
             }
+            http.headers().frameOptions().sameOrigin();
         } else {
             super.configure(http);
         }
