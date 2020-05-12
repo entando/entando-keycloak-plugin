@@ -3,6 +3,8 @@ package org.entando.entando.aps.servlet.security;
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.Authorization;
+import com.agiletec.aps.system.services.group.Group;
+import com.agiletec.aps.system.services.role.Permission;
 import com.agiletec.aps.system.services.role.Role;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
@@ -115,10 +117,21 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
     }
 
     private void addAuthorizations(final List<String> permissions, final UserDetails user) {
-        final Role role = new Role();
-        role.setName("keycloak");
-        role.getPermissions().addAll(permissions);
-        user.addAuthorization(new Authorization(null, role));
+
+        permissions.stream()
+                .filter(permission -> permission.equals(Permission.SUPERUSER))
+                .findFirst()
+                .ifPresent(permission -> {
+
+                    final Role role = new Role();
+                    role.setName("admin");
+                    role.getPermissions().addAll(permissions);
+
+                    final Group group = new Group();
+                    group.setName(Group.ADMINS_GROUP_NAME);
+
+                    user.addAuthorization(new Authorization(group, role));
+                });
     }
 
     private void saveUserOnSession(final HttpServletRequest request, final UserDetails guestUser) {
