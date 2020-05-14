@@ -125,7 +125,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
 
                     final Role role = new Role();
                     role.setName("admin");
-                    role.getPermissions().addAll(permissions);
+                    role.addPermission(Permission.SUPERUSER);
 
                     final Group group = new Group();
                     group.setName(Group.ADMINS_GROUP_NAME);
