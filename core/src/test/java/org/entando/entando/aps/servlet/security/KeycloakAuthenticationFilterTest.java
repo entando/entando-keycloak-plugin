@@ -22,10 +22,7 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -69,19 +66,21 @@ public class KeycloakAuthenticationFilterTest {
     @Test
     public void attemptAuthenticationWithSuperuserPermissionShouldAddKeycloakAuthentication() throws Exception {
 
+        List<String> expected = Collections.singletonList(Permission.SUPERUSER);
+
         // multiple permissions
         this.mockForAttemptAuthenticationTest();
         List<String> permissionList = Arrays.asList(Permission.ENTER_BACKEND, Permission.SUPERUSER);
         when(tokenRoles.getRoles()).thenReturn(permissionList);
         User actual = (User) keycloakAuthenticationFilter.attemptAuthentication(request, response).getPrincipal();
-        KeycloakAuthenticationFilterAssertionHelper.assertKeycloakAuthorization(actual.getAuthorizations().get(0), permissionList);
+        KeycloakAuthenticationFilterAssertionHelper.assertKeycloakAuthorization(actual.getAuthorizations().get(0), expected);
 
         // single permission
         this.mockForAttemptAuthenticationTest();
-        permissionList = Arrays.asList(Permission.SUPERUSER);
+        permissionList = Collections.singletonList(Permission.SUPERUSER);
         when(tokenRoles.getRoles()).thenReturn(permissionList);
         actual = (User) keycloakAuthenticationFilter.attemptAuthentication(request, response).getPrincipal();
-        KeycloakAuthenticationFilterAssertionHelper.assertKeycloakAuthorization(actual.getAuthorizations().get(0), permissionList);
+        KeycloakAuthenticationFilterAssertionHelper.assertKeycloakAuthorization(actual.getAuthorizations().get(0), expected);
     }
 
 
@@ -90,7 +89,7 @@ public class KeycloakAuthenticationFilterTest {
 
         this.mockForAttemptAuthenticationTest();
 
-        List<String> permissionList = Arrays.asList(Permission.ENTER_BACKEND);
+        List<String> permissionList = Collections.singletonList(Permission.ENTER_BACKEND);
         when(tokenRoles.getRoles()).thenReturn(permissionList);
         User actual = (User) keycloakAuthenticationFilter.attemptAuthentication(request, response).getPrincipal();
 
