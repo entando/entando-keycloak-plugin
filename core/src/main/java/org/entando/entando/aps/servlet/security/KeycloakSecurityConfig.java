@@ -20,9 +20,7 @@ public class KeycloakSecurityConfig extends OAuth2SecurityConfiguration {
 
     @Autowired
     public KeycloakSecurityConfig(final KeycloakAuthenticationFilter keycloakAuthenticationFilter,
-                                  /*final CorsFilter2 corsFilter,*/
                                   final KeycloakConfiguration configuration) {
-        //super(corsFilter);
         this.keycloakAuthenticationFilter = keycloakAuthenticationFilter;
         this.configuration = configuration;
     }
