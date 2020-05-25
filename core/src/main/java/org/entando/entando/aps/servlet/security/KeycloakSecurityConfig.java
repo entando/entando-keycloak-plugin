@@ -28,19 +28,23 @@ public class KeycloakSecurityConfig extends OAuth2SecurityConfiguration {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         if (configuration.isEnabled()) {
-            final HttpSecurity httpSecurity = http.addFilterBefore(keycloakAuthenticationFilter, BasicAuthenticationFilter.class)
-                    .csrf().disable();
-
             if (StringUtils.isNotEmpty(configuration.getSecureUris())) {
                 final String[] urls = configuration.getSecureUris().split(",");
-                ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry requests = httpSecurity.authorizeRequests();
+                ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry requests = http.authorizeRequests();
                 for (String url : urls) {
                     if (StringUtils.isNotEmpty(url)) {
                         requests = requests.antMatchers(url).authenticated();
                     }
                 }
             }
-            http.headers().frameOptions().sameOrigin();
+
+            http
+                .headers().frameOptions().sameOrigin()
+                .and()
+                    .addFilterBefore(keycloakAuthenticationFilter, BasicAuthenticationFilter.class)
+                    .anonymous().disable()
+                    .csrf().disable()
+                    .cors();
         } else {
             super.configure(http);
         }
