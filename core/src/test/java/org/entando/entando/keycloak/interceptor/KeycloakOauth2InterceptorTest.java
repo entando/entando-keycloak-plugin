@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 public class KeycloakOauth2InterceptorTest {
 
-    private static final String PERMISSION = "my-permission";
+    private static final String[] PERMISSION = {"my-permission"};
 
     @Mock private IAuthorizationManager authorizationManager;
 
@@ -95,7 +95,7 @@ public class KeycloakOauth2InterceptorTest {
         final boolean allowed = interceptor.preHandle(request, response, method);
         assertThat(allowed).isTrue();
 
-        verify(authorizationManager, times(1)).isAuthOnPermission(same(userDetails), eq(PERMISSION));
+        verify(authorizationManager, times(1)).isAuthOnPermission(same(userDetails), eq(PERMISSION[0]));
 
         SecurityContextHolder.getContext().setAuthentication(null);
     }

@@ -29,22 +29,31 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
             final HandlerMethod method = (HandlerMethod) handler;
             final RestAccessControl accessControl = method.getMethodAnnotation(RestAccessControl.class);
             if (accessControl != null) {
-                final String permission = accessControl.permission();
+                final String[] permission = accessControl.permission();
                 validateToken(request, permission);
             }
         }
         return true;
     }
 
-    private void validateToken(final HttpServletRequest request, final String permission) {
+    private void validateToken(final HttpServletRequest request, final String[] permissions) {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof UserAuthentication)) {
             throw new EntandoAuthorizationException("invalid authentication", request, "guest");
         }
         final UserDetails user = (UserDetails) authentication.getDetails();
-        if (StringUtils.isNotEmpty(permission) && !authorizationManager.isAuthOnPermission(user, permission)) {
-            log.warn("User {} is missing the required permission {}", user.getUsername(), permission);
-            throw new EntandoAuthorizationException(null, request, user.getUsername());
+        if (permissions != null) {
+            boolean hasPermission = false;
+            for (String permission : permissions) {
+                if (authorizationManager.isAuthOnPermission(user, permission)) {
+                    hasPermission = true;
+                    break;
+                }
+            }
+            if (!hasPermission) {
+                log.warn("User {} needs at least one of the required permissions {}", user.getUsername(), permissions);
+                throw new EntandoAuthorizationException(null, request, user.getUsername());
+            }
         }
     }
 
