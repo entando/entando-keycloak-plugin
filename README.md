@@ -1,7 +1,7 @@
 # Entando Keycloak Plugin
 Keycloak Integration for Entando Core - Gives SSO capabilities and also has User Management through Keycloak.
 
-For more information and documentation visit: http://docs.entando.com, or http://forum.entando.org. Or for the latest news or product information please visit the main website: https://www.entando.com.
+For more information and documentation visit:  https://dev.entando.org, or https://forum.entando.org. Or for the latest news or product information please visit the main website: https://www.entando.com.
 
 Information below is for building from source or running locally as a contributor or developer on the plugin itself.. See the links above for general documentation and usage.
 
