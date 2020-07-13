@@ -1,0 +1,34 @@
+buildPack: entando-maven-lib
+pipelineConfig:
+  env:
+    - name: PIPELINE_CODE
+      value: eac
+    - name: TEST_DEPLOYMENT
+      value: "false"
+    - name: SKIP_CHECKSTYLE
+      value: "true"
+    - name: UPDATE_OWASP_DB
+      value: "false"
+  pipelines:
+    pullRequest:
+      postBuild:
+        steps:
+          - sh: mvn versions:set -DnewVersion=$PREVIEW_VERSION
+            name: set-version
+            dir: preview/
+          - sh:  mvn install
+            name: war-build
+            dir: preview/
+          - sh:  echo $PREVIEW_VERSION>VERSION && skaffold-build
+            name: container-build
+            dir: preview/
+      promote:
+        steps:
+          - dir: preview
+            steps:
+              - sh: make preview
+                name: make-preview
+              - sh: jx preview --name ${REPO_NAME}-${PIPELINE_CODE}pr${PULL_NUMBER} --app $APP_NAME --dir ../.. --namespace ${REPO_NAME}-${PIPELINE_CODE}pr${PULL_NUMBER}
+                name: jx-preview
+          - sh: run-post-deployment-tests
+            name: run-post-deployment-tests
