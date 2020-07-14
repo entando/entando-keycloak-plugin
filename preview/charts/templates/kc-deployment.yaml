@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    deployment: keycloak
+  name: keycloak
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      deployment: keycloak
+  template:
+    metadata:
+      labels:
+        deployment: keycloak
+      name: keycloak-pod
+    spec:
+      containers:
+        - env:
+            - name: DB_VENDOR
+              value: h2
+            - name: SERVER_SERVLET_CONTEXT_PATH
+              value: /auth
+            - name: X509_CA_BUNDLE
+              value: >-
+                /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+                /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                /etc/entando/certs/entando-default-ca-secret/ca.crt
+            - name: CONNECTION_CONFIG_ROOT
+              value: /etc/entando/connectionconfigs
+            - name: KEYCLOAK_USER
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: quickstart-kc-admin-secret
+                  optional: false
+            - name: KEYCLOAK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: quickstart-kc-admin-secret
+                  optional: false
+            - name: PROXY_ADDRESS_FORWARDING
+              value: 'true'
+            - name: JAVA_TOOL_OPTIONS
+              value: >-
+                -Dkeycloak.migration.action=import
+                -Dkeycloak.migration.provider=singleFile
+                -Dkeycloak.migration.file=/etc/entando/connectionconfigs/quickstart-kc-realm/realm.json
+                -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
+          image: 'docker.io/entando/entando-keycloak:6.0.15'
+          imagePullPolicy: Always
+          name: server-container
+          ports:
+            - containerPort: 8080
+              name: server-port
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 40
+            httpGet:
+              path: /auth
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/entando/connectionconfigs/quickstart-kc-realm
+              name: quickstart-kc-realm-volume
+              readOnly: true
+            - mountPath: /etc/entando/certs/entando-default-ca-secret
+              name: entando-default-ca-secret-volume
+              readOnly: true
+            - mountPath: /opt/jboss/keycloak/standalone/data
+              name: quickstart-kc-server-volume
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: default
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: quickstart-kc-server-volume
+          persistentVolumeClaim:
+            claimName: quickstart-kc-server-pvc
+        - name: quickstart-kc-realm-volume
+          secret:
+            defaultMode: 420
+            secretName: quickstart-kc-realm
+        - name: entando-default-ca-secret-volume
+          secret:
+            defaultMode: 420
+            secretName: entando-default-ca-secret

@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: quickstart-kc-ingress
+spec:
+  rules:
+    - host: {{ Values.nameSuffix }}-kc.{{ Values.routingSuffix}}
+      http:
+        paths:
+          - backend:
+              serviceName: keycloak
+              servicePort: 8080
+            path: /auth
