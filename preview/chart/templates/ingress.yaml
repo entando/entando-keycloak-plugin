@@ -1,10 +1,10 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: quickstart-kc-ingress
+  name: preview-ingress
 spec:
   rules:
-    - host: {{ Values.nameSuffix }}-kc.{{ Values.routingSuffix}}
+    - host: kc-{{ .Values.nameSuffix }}.{{ .Values.routingSuffix}}
       http:
         paths:
           - backend:

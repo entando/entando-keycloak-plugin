@@ -1,0 +1,8 @@
+routingSuffix: apps.serv.run
+nameSuffix: ekp-pr1
+keycloakUser: entando-admin
+keycloakPassword: qwe123
+keycloakImageVersion: 6.0.15
+tag: 6.2.0-SNAPSHOT
+repository: docker.io/entando/entando-sample-app-ekp
+

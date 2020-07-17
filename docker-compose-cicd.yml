@@ -6,7 +6,7 @@ services:
     image: jboss/keycloak
     hostname: keycloak
     environment:
-      KEYCLOAK_USER: admin
+      KEYCLOAK_USER: entando-admin
       KEYCLOAK_PASSWORD: qwe123
       DB_VENDOR: h2
       PROXY_ADDRESS_FORWARDING: "true"
@@ -25,7 +25,7 @@ services:
         MVN_COMMAND: ${MVN_COMMAND}
     environment:
       KEYCLOAK_AUTH_URL: http://keycloak:8080/auth
-      KEYCLOAK_REALM: entando-core-test
+      KEYCLOAK_REALM: entando-development
       KEYCLOAK_CLIENT_ID: entando-core
     depends_on:
       keycloak:

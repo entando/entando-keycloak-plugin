@@ -24,7 +24,7 @@ services:
     ports:
       - "8081:8080"
     environment:
-      KEYCLOAK_USER: admin
+      KEYCLOAK_USER: entando-admin
       KEYCLOAK_PASSWORD: qwe123
       DB_ADDR: database
       DB_PORT: 3306
