@@ -24,7 +24,7 @@ pipelineConfig:
 #            dir: preview/
       promote:
         steps:
-          - dir: preview/chart
+          - dir: preview/preview-chart
             steps:
               - sh: make preview
                 name: make-preview
