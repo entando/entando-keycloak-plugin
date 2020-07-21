@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    deployment: core
+  name: core
+spec:
+  ports:
+    - name: server-port
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: appbuilder-port
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    deployment: core
+  sessionAffinity: None
+  type: ClusterIP

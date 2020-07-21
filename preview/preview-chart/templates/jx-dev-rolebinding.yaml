@@ -1,0 +1,11 @@
+apiVersion: authorization.openshift.io/v1
+kind: RoleBinding
+metadata:
+  name: jx-dev-admin
+roleRef:
+  name: admin
+subjects:
+  - kind: User
+    name: jx-dev
+userNames:
+  - jx-dev

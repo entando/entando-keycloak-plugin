@@ -5,4 +5,5 @@ keycloakPassword: qwe123
 keycloakImageVersion: 6.0.15
 tag: 6.2.0-SNAPSHOT
 repository: docker.io/entando/entando-sample-app-ekp
+appBuilderVersion: 6.1.84
 

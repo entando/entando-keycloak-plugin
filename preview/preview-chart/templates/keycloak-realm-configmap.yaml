@@ -3176,4 +3176,4 @@ data:
           }]
 kind: ConfigMap
 metadata:
-  name: kc-realm
+  name: keycloak-realm

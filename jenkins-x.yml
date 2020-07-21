@@ -12,16 +12,15 @@ pipelineConfig:
   pipelines:
     pullRequest:
       postBuild:
-        steps: []
-#          - sh: mvn versions:set -DnewVersion=$PREVIEW_VERSION
-#            name: set-version
-#            dir: preview/
-#          - sh:  mvn install -Dentando.keycloak.plugin.version=$PREVIEW_VERSION
-#            name: war-build
-#            dir: preview/
-#          - sh:  echo $PREVIEW_VERSION>VERSION && skaffold-build
-#            name: container-build
-#            dir: preview/
+        steps:
+          - dir: preview/entando-sample-app-ekp
+            steps:
+              - sh: mvn versions:set -DnewVersion=$PREVIEW_VERSION
+                name: set-version
+              - sh:  mvn package
+                name: war-build
+              - sh:  echo $PREVIEW_VERSION>VERSION && skaffold-build
+                name: container-build
       promote:
         steps:
           - dir: preview/preview-chart
