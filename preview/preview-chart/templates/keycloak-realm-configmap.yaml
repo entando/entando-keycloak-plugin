@@ -1748,10 +1748,10 @@ data:
                   "clientAuthenticatorType": "client-secret",
                   "secret": "**********",
                   "redirectUris": [
-                          "http://localhost:8080/*"
+                          "*"
                   ],
                   "webOrigins": [
-                          "http://localhost:8080"
+                          "*"
                   ],
                   "notBefore": 0,
                   "bearerOnly": false,
@@ -1841,7 +1841,7 @@ data:
                   "clientAuthenticatorType": "client-secret",
                   "secret": "930837f0-95b2-4eeb-b303-82a56cac76e6",
                   "redirectUris": [
-                          "http://localhost:8080/*"
+                          "*"
                   ],
                   "webOrigins": [],
                   "notBefore": 0,
