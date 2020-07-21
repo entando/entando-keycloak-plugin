@@ -12,7 +12,7 @@ pipelineConfig:
   pipelines:
     pullRequest:
       postBuild:
-        steps:
+        steps: []
 #          - sh: mvn versions:set -DnewVersion=$PREVIEW_VERSION
 #            name: set-version
 #            dir: preview/
