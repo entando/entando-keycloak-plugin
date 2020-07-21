@@ -29,7 +29,7 @@ spec:
               value: http://kc-{{ .Values.nameSuffix }}.{{ .Values.routingSuffix}}/auth
             - name: KEYCLOAK_CLIENT_ID
               value: entando-core 
-            - name: KEYCLOAK_CLIENT_ID
+            - name: KEYCLOAK_CLIENT_SECRET
               value: 930837f0-95b2-4eeb-b303-82a56cac76e6
             - name: SERVER_SERVLET_CONTEXT_PATH
               value: /entando-sample-app-ekp
