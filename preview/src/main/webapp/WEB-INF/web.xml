@@ -15,6 +15,7 @@
             classpath*:spring/plugins/**/aps/**/**.xml
             classpath*:spring/plugins/**/apsadmin/**/**.xml
             classpath*:spring/aps/managers/keycloak.xml
+            classpath*:spring/aps/managers/cors.xml
         </param-value>
     </context-param>
     <context-param>
@@ -159,9 +160,16 @@
         <servlet-name>APIServlet</servlet-name>
         <url-pattern>/legacyapi/*</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ControllerServlet</servlet-name>
+        <url-pattern>/page/*</url-pattern>
+    </servlet-mapping>
 
     <session-config>
         <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
     </session-config>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

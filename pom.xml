@@ -6,12 +6,12 @@
     <parent>
         <artifactId>entando-core-parent</artifactId>
         <groupId>org.entando</groupId>
-        <version>6.2.13</version>
+        <version>6.2.14</version>
     </parent>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
     <version>6.2.0-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <licenses>
         <license>
             <name>GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1, February 1999</name>
@@ -23,13 +23,6 @@
         <name>Entando Inc.</name>
         <url>http://www.entando.com/</url>
     </organization>
-    <developers>
-        <developer>
-            <id>s.marcelino</id>
-            <name>Sérgio Marcelino</name>
-            <email>s.marcelino@entando.com</email>
-        </developer>
-    </developers>
     <scm>
         <connection>scm:git:git@github.com:entando/entando-keycloak-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:entando/entando-keycloak-plugin.git</developerConnection>
@@ -48,40 +41,27 @@
             </snapshots>
         </repository>
     </repositories>
-    <distributionManagement>
-        <repository>
-            <id>${maven.release.repository.id}</id>
-            <name>Releases</name>
-            <url>${maven.release.repository.url}</url>
-        </repository>
-        <snapshotRepository>
-            <id>${maven.snapshot.repository.id}</id>
-            <name>Snapshot</name>
-            <url>${maven.snapshot.repository.url}</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven.snapshot.repository.id>sonatype-nexus-snapshot</maven.snapshot.repository.id>
-        <maven.snapshot.repository.url>https://oss.sonatype.org/content/repositories/snapshots
-        </maven.snapshot.repository.url>
-        <maven.relase.repository.id>sonatype-nexus-staging</maven.relase.repository.id>
-        <maven.release.repository.url>https://oss.sonatype.org/service/local/staging/deploy/maven2/
-        </maven.release.repository.url>
-
-        <entando.version>6.2.0-SNAPSHOT</entando.version>
+        <entando-engine.version>6.2.16</entando-engine.version>
+        <checkstyle.skip>true</checkstyle.skip>
     </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>org.entando.entando</groupId>
             <artifactId>entando-engine</artifactId>
-            <version>6.2.9</version>
+            <version>${entando-engine.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -99,7 +79,6 @@
             <version>7.0.1</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
@@ -118,7 +97,6 @@
             <version>3.12.1.Final</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>

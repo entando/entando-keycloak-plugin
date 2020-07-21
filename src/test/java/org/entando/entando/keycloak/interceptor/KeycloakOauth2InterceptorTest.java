@@ -51,7 +51,7 @@ public class KeycloakOauth2InterceptorTest {
         MockitoAnnotations.initMocks(this);
         interceptor = new KeycloakOauth2Interceptor();
         interceptor.setAuthorizationManager(authorizationManager);
-
+        SecurityContextHolder.getContext().setAuthentication(null);
         when(resp.getBody()).thenReturn(accessToken);
         when(request.getSession()).thenReturn(session);
     }
