@@ -31,11 +31,11 @@ pipelineConfig:
               - sh: jx preview --name ${REPO_NAME}-${PIPELINE_CODE}pr${PULL_NUMBER} --app $APP_NAME --dir ../.. --namespace ${REPO_NAME}-${PIPELINE_CODE}pr${PULL_NUMBER}
                 name: jx-preview
           - sh: |-
-                run-post-deployment-tests \
-                        -Dkeycloak.enabled=true \
-                        -Dkeycloak.realm=entando-development \
-                        -Dkeycloak.auth.url=http://kc-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/auth \
-                        -Dkeycloak.client.id=entando-core \
-                        -Dkeycloak.client.secret=930837f0-95b2-4eeb-b303-82a56cac76e6 \
-                        -Dkeycloak.public.client.id=entando-web
+                KEYCLOAK_ENABLED=true  \
+                KEYCLOAK_REALM=entando-development \
+                KEYCLOAK_AUTH_URL=http://kc-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/auth \
+                KEYCLOAK_CLIENT_ID=entando-core \
+                KEYCLOAK_CLIENT_SECRET=930837f0-95b2-4eeb-b303-82a56cac76e6 \
+                KEYCLOAK_PUBLIC_CLIENT_ID=entando-web \
+                run-post-deployment-tests
             name: run-post-deployment-tests
