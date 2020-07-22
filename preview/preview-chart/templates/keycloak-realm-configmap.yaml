@@ -2014,6 +2014,7 @@ data:
                   "attributes": {},
                   "authenticationFlowBindingOverrides": {},
                   "fullScopeAllowed": false,
+                  "fullScopeAllowed": false,
                   "nodeReRegistrationTimeout": 0,
                   "defaultClientScopes": [
                           "web-origins",

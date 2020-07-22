@@ -38,3 +38,8 @@ pipelineConfig:
                 KEYCLOAK_PUBLIC_CLIENT_ID=entando-web \
                 run-post-deployment-tests
             name: run-post-deployment-tests
+          - sh: |-
+                publish-link "Keycloak" "http://kc-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/auth" && \
+                publish-link "Entando AppBuilder" "http://core-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/app-builder" && \
+                publish-link "Entando Portal" "http://core-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/entando-sample-app-ekp"
+            name: publish-links
