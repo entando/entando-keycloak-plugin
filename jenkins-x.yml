@@ -2,7 +2,7 @@ buildPack: entando-maven-lib
 pipelineConfig:
   env:
     - name: PIPELINE_CODE
-      value: eac
+      value: ekp
     - name: TEST_DEPLOYMENT
       value: "false"
     - name: SKIP_CHECKSTYLE
@@ -12,30 +12,34 @@ pipelineConfig:
   pipelines:
     pullRequest:
       postBuild:
-        steps: []
-#          - sh: mvn versions:set -DnewVersion=$PREVIEW_VERSION
-#            name: set-version
-#            dir: preview/
-#          - sh:  mvn install -Dentando.keycloak.plugin.version=$PREVIEW_VERSION
-#            name: war-build
-#            dir: preview/
-#          - sh:  echo $PREVIEW_VERSION>VERSION && skaffold-build
-#            name: container-build
-#            dir: preview/
+        steps:
+          - dir: preview/entando-sample-app-ekp
+            steps:
+              - sh: mvn versions:set -DnewVersion=$PREVIEW_VERSION
+                name: set-version
+              - sh:  mvn package
+                name: war-build
+              - sh:  echo $PREVIEW_VERSION>VERSION && skaffold-build
+                name: container-build
       promote:
         steps:
-          - dir: preview
+          - dir: preview/preview-chart
             steps:
               - sh: make preview
                 name: make-preview
               - sh: jx preview --name ${REPO_NAME}-${PIPELINE_CODE}pr${PULL_NUMBER} --app $APP_NAME --dir ../.. --namespace ${REPO_NAME}-${PIPELINE_CODE}pr${PULL_NUMBER}
                 name: jx-preview
           - sh: |-
-                run-post-deployment-tests \
-                        -Dkeycloak.enabled=true \
-                        -Dkeycloak.realm=entando-development \
-                        -Dkeycloak.auth.url=http://kc-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/auth \
-                        -Dkeycloak.client.id=entando-core \
-                        -Dkeycloak.client.secret=930837f0-95b2-4eeb-b303-82a56cac76e6 \
-                        -Dkeycloak.public.client.id=entando-web
+                KEYCLOAK_ENABLED=true  \
+                KEYCLOAK_REALM=entando-development \
+                KEYCLOAK_AUTH_URL=http://kc-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/auth \
+                KEYCLOAK_CLIENT_ID=entando-core \
+                KEYCLOAK_CLIENT_SECRET=930837f0-95b2-4eeb-b303-82a56cac76e6 \
+                KEYCLOAK_PUBLIC_CLIENT_ID=entando-web \
+                run-post-deployment-tests
             name: run-post-deployment-tests
+          - sh: |-
+                publish-link "Keycloak" "http://kc-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/auth" && \
+                publish-link "Entando AppBuilder" "http://core-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/app-builder/" && \
+                publish-link "Entando Portal" "http://core-${PIPELINE_CODE}pr${PULL_NUMBER}.${ENTANDO_DEFAULT_ROUTING_SUFFIX}/entando-sample-app-ekp"
+            name: publish-links

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: kc-server-pvc
+  name: core-pvc
 spec:
   accessModes:
     - ReadWriteOnce

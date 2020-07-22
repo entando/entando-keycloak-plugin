@@ -33,7 +33,7 @@ spec:
               value: >-
                 -Dkeycloak.migration.action=import
                 -Dkeycloak.migration.provider=singleFile
-                -Dkeycloak.migration.file=/etc/kc-realm/realm.json
+                -Dkeycloak.migration.file=/etc/keycloak-realm/realm.json
                 -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
           image: "docker.io/entando/entando-keycloak:{{ .Values.keycloakImageVersion }}"
           imagePullPolicy: Always
@@ -56,11 +56,11 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - mountPath: /etc/kc-realm
-              name: kc-realm-volume
+            - mountPath: /etc/keycloak-realm
+              name: keycloak-realm-volume
               readOnly: true
             - mountPath: /opt/jboss/keycloak/standalone/data
-              name: kc-server-volume
+              name: keycloak-volume
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -69,10 +69,10 @@ spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: kc-server-volume
+        - name: keycloak-volume
           persistentVolumeClaim:
-            claimName: kc-server-pvc
-        - name: kc-realm-volume
+            claimName: keycloak-pvc
+        - name: keycloak-realm-volume
           configMap:
             defaultMode: 420
-            name: kc-realm
+            name: keycloak-realm

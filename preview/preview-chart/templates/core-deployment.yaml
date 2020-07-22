@@ -1,0 +1,95 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    deployment: core
+  name: core
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      deployment: core
+  template:
+    metadata:
+      labels:
+        deployment: core
+      name: core-pod
+    spec:
+      containers:
+        - env:
+            - name: KEYCLOAK_ENABLED
+              value: "true"
+            - name: KEYCLOAK_REALM
+              value: entando-development
+            - name: KEYCLOAK_PUBLIC_CLIENT_ID
+              value: entando-web
+            - name: KEYCLOAK_AUTH_URL
+              value: http://kc-{{ .Values.nameSuffix }}.{{ .Values.routingSuffix}}/auth
+            - name: KEYCLOAK_CLIENT_ID
+              value: entando-core 
+            - name: KEYCLOAK_CLIENT_SECRET
+              value: 930837f0-95b2-4eeb-b303-82a56cac76e6
+            - name: SERVER_SERVLET_CONTEXT_PATH
+              value: /entando-sample-app-ekp
+            - name: CONNECTION_CONFIG_ROOT
+              value: /etc/entando/connectionconfigs
+            - name: DB_STARTUP_CHECK
+              value: "false"
+            - name: PORTDB_DRIVER
+              value: derby
+            - name: SERVDB_DRIVER
+              value: derby
+          image: {{ .Values.repository }}:{{ .Values.tag }}
+          imagePullPolicy: Always
+          name: server-container
+          ports:
+            - containerPort: 8080
+              name: server-port
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 40
+            httpGet:
+              path: /entando-sample-app-ekp
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 3
+          volumeMounts:
+            - mountPath: /entando-data
+              name: core-volume
+        - env:
+            - name: REACT_APP_DOMAIN
+              value: /entando-sample-app-ekp
+          image: docker.io/entando/app-builder:{{ .Values.appBuilderVersion }}
+          imagePullPolicy: Always
+          name: appbuilder-container
+          ports:
+            - containerPort: 8081
+              name: appbuilder-port
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 40
+            httpGet:
+              path: /app-builder/index.html
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 3
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: default
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: core-volume
+          persistentVolumeClaim:
+            claimName: core-pvc
+
