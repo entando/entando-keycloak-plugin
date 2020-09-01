@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 import com.agiletec.aps.system.exception.ApsSystemException;
-import com.agiletec.aps.system.services.authorization.AuthorizationManager;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.User;
@@ -158,7 +157,7 @@ public class KeycloakUserManager implements IUserManager {
     }
 
     private Optional<UserRepresentation> getUserRepresentation(final String username) {
-        return keycloakService.listUsers(username).stream().findFirst();
+        return keycloakService.listUsers(username).stream().filter(f->f.getUsername().equals(username)).findFirst();
     }
 
 }
