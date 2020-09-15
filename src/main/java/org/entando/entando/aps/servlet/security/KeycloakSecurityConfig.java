@@ -45,6 +45,11 @@ public class KeycloakSecurityConfig extends OAuth2SecurityConfiguration {
                     .anonymous().disable()
                     .csrf().disable()
                     .cors();
+
+//            http
+//                    .headers()
+//                    .contentSecurityPolicy("default-src 'self' http://localhost:9080; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:");
+
         } else {
             super.configure(http);
         }
