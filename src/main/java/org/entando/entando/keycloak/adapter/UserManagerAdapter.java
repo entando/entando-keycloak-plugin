@@ -13,8 +13,10 @@ import java.util.List;
 
 public class UserManagerAdapter extends UserManager implements IUserManager {
 
-    private final KeycloakUserManager keycloak;
+    private KeycloakUserManager keycloak;
+    public UserManagerAdapter(){
 
+    }
     public UserManagerAdapter(final IAuthorizationManager authorizationManager,
                               final KeycloakService keycloakService,
                               final OpenIDConnectService oidcService) {
