@@ -8,6 +8,7 @@ public class KeycloakConfiguration {
     private String clientId;
     private String clientSecret;
     private String secureUris;
+    private String ignoredUris;
     private String defaultAuthorizations;
 
     public String toString() {
@@ -68,5 +69,13 @@ public class KeycloakConfiguration {
 
     public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getIgnoredUris() {
+        return ignoredUris;
+    }
+
+    public void setIgnoredUris(String ignoredUris) {
+        this.ignoredUris = ignoredUris;
     }
 }

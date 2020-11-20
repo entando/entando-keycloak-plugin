@@ -71,7 +71,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
     public Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response) throws AuthenticationException {
         final String authorization = request.getHeader("Authorization");
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        if (authorization == null || !authorization.startsWith("Bearer ") || isIgnoredUri(request)) {
             final UserDetails guestUser = userManager.getGuestUser();
             final GuestAuthentication guestAuthentication = new GuestAuthentication(guestUser);
             SecurityContextHolder.getContext().setAuthentication(guestAuthentication);
@@ -112,6 +112,18 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
             log.error("System exception", e);
             throw new InsufficientAuthenticationException("error parsing OAuth parameters");
         }
+    }
+
+    private boolean isIgnoredUri(HttpServletRequest request) {
+        if (configuration.getIgnoredUris() != null && !configuration.getIgnoredUris().isEmpty()) {
+            String[] ignoredUris = configuration.getIgnoredUris().split(",");
+            for (String uri : ignoredUris) {
+                if (request.getPathInfo().equals(uri)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void addAuthorizations(final List<String> permissions, final UserDetails user) {

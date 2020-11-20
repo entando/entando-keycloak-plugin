@@ -15,6 +15,7 @@
         <property name="clientId" value="${keycloak.clientId:entando-app}" />
         <property name="clientSecret" value="${keycloak.clientSecret:}" />
         <property name="secureUris" value="${keycloak.secureUris:}" />
+        <property name="ignoredUris" value="${keycloak.ignoredUris:}" />
         <property name="defaultAuthorizations" value="${keycloak.authenticated.user.default.authorizations:}" />
     </bean>
 
