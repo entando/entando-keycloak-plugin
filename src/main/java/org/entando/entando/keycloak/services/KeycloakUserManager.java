@@ -3,7 +3,6 @@ package org.entando.entando.keycloak.services;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.User;
@@ -13,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.entando.entando.aps.system.exception.ResourceNotFoundException;
+import org.entando.entando.ent.exception.EntException;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
 import org.entando.entando.keycloak.services.oidc.exception.OidcException;
@@ -116,7 +116,7 @@ public class KeycloakUserManager implements IUserManager {
         try {
             user.setAuthorizations(authorizationManager.getUserAuthorizations(user.getUsername()));
             return user;
-        } catch (ApsSystemException e) {
+        } catch (EntException e) {
             throw new RuntimeException(e);
         }
     }
