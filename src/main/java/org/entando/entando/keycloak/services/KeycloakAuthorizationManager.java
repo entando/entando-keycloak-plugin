@@ -1,6 +1,5 @@
 package org.entando.entando.keycloak.services;
 
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.Authorization;
 import com.agiletec.aps.system.services.authorization.AuthorizationManager;
 import com.agiletec.aps.system.services.group.Group;
@@ -17,6 +16,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
+
+import org.entando.entando.ent.exception.EntException;
 
 @Service
 public class KeycloakAuthorizationManager {
@@ -69,7 +70,7 @@ public class KeycloakAuthorizationManager {
             roleName = ofNullable(role).map(Role::getName).orElse(null); // null or "" ?
             authorizationManager.addUserAuthorization(user.getUsername(), groupName, roleName);
             user.addAuthorization(new Authorization(group, role));
-        } catch (ApsSystemException e) {
+        } catch (EntException e) {
             throw new RuntimeException(e);
         }
     }
@@ -84,7 +85,7 @@ public class KeycloakAuthorizationManager {
                 groupManager.addGroup(group);
             }
             return group;
-        } catch (ApsSystemException e) {
+        } catch (EntException e) {
             throw new RuntimeException(e);
         }
     }
@@ -99,7 +100,7 @@ public class KeycloakAuthorizationManager {
                 roleManager.addRole(role);
             }
             return role;
-        } catch (ApsSystemException e) {
+        } catch (EntException e) {
             throw new RuntimeException(e);
         }
     }

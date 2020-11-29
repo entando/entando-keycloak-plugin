@@ -1,7 +1,6 @@
 package org.entando.entando.keycloak.filter;
 
 import com.agiletec.aps.system.SystemConstants;
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
@@ -43,6 +42,8 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.entando.entando.ent.exception.EntException;
 
 public class KeycloakFilterTest {
 
@@ -90,7 +91,7 @@ public class KeycloakFilterTest {
     }
 
     @Test
-    public void testAuthenticationFlow() throws IOException, ServletException, ApsSystemException {
+    public void testAuthenticationFlow() throws IOException, ServletException, EntException {
         final String requestRedirect = "https://dev.entando.org/entando-app/main.html";
         final String loginEndpoint = "https://dev.entando.org/entando-app/do/login";
 
