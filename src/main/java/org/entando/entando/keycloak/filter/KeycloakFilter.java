@@ -1,7 +1,6 @@
 package org.entando.entando.keycloak.filter;
 
 import com.agiletec.aps.system.SystemConstants;
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
@@ -37,6 +36,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static org.entando.entando.KeycloakWiki.wiki;
+
+import org.entando.entando.ent.exception.EntException;
 
 public class KeycloakFilter implements Filter {
 
@@ -217,7 +218,7 @@ public class KeycloakFilter implements Filter {
                     }
                 }
                 throw new RestServerError("Unable to validate token", e);
-            } catch (ApsSystemException e) {
+            } catch (EntException e) {
                 throw new RestServerError("Unable to find user", e);
             }
 

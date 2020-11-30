@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
 import java.util.List;
+import org.entando.entando.ent.exception.EntException;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.web.user.model.UserPasswordRequest;
@@ -179,9 +179,9 @@ public class UserManagerIT {
     }
 
     @Test(expected = RuntimeException.class)
-    public void testGetUserDetailsException() throws ApsSystemException {
+    public void testGetUserDetailsException() throws EntException {
         userManager.addUser(activeUser());
-        doThrow(new ApsSystemException(USERNAME)).when(authorizationManager).getUserAuthorizations(anyString());
+        doThrow(new EntException(USERNAME)).when(authorizationManager).getUserAuthorizations(anyString());
         userManager.getUser(USERNAME);
     }
 

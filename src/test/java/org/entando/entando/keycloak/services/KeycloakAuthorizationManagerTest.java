@@ -1,6 +1,5 @@
 package org.entando.entando.keycloak.services;
 
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.Authorization;
 import com.agiletec.aps.system.services.authorization.AuthorizationManager;
 import com.agiletec.aps.system.services.group.Group;
@@ -25,6 +24,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.entando.entando.ent.exception.EntException;
+
 public class KeycloakAuthorizationManagerTest {
 
     @Mock private UserDetails userDetails;
@@ -42,7 +43,7 @@ public class KeycloakAuthorizationManagerTest {
     }
 
     @Test
-    public void testGroupCreation() throws ApsSystemException {
+    public void testGroupCreation() throws EntException {
         when(configuration.getDefaultAuthorizations()).thenReturn("readers");
         when(groupManager.getGroup(anyString())).thenReturn(null);
         when(userDetails.getAuthorizations()).thenReturn(new ArrayList<>());
@@ -64,7 +65,7 @@ public class KeycloakAuthorizationManagerTest {
     }
 
     @Test
-    public void testGroupAndRoleCreation() throws ApsSystemException {
+    public void testGroupAndRoleCreation() throws EntException {
         when(configuration.getDefaultAuthorizations()).thenReturn("readers:read-all");
         when(groupManager.getGroup(anyString())).thenReturn(null);
         when(roleManager.getRole(anyString())).thenReturn(null);

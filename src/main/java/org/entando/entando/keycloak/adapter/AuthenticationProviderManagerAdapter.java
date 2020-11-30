@@ -1,10 +1,10 @@
 package org.entando.entando.keycloak.adapter;
 
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.AuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
+import org.entando.entando.ent.exception.EntException;
 import org.entando.entando.keycloak.services.KeycloakAuthenticationProviderManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -22,14 +22,14 @@ public class AuthenticationProviderManagerAdapter extends AuthenticationProvider
     private boolean keycloakEnabled;
 
     @Override
-    public UserDetails getUser(final String username) throws ApsSystemException {
+    public UserDetails getUser(final String username) throws EntException {
         return keycloakEnabled
                 ? keycloak.getUser(username)
                 : super.getUser(username);
     }
 
     @Override
-    public UserDetails getUser(final String username, final String password) throws ApsSystemException {
+    public UserDetails getUser(final String username, final String password) throws EntException {
         return keycloakEnabled
                 ? keycloak.getUser(username, password)
                 : super.getUser(username, password);
