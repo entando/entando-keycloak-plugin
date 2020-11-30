@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
-    <version>6.2.0-SNAPSHOT</version>
+    <version>6.3.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <licenses>
         <license>
@@ -42,7 +42,7 @@
         </repository>
     </repositories>
     <properties>
-        <entando-engine.version>6.2.16</entando-engine.version>
+        <entando-engine.version>6.3.5</entando-engine.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>

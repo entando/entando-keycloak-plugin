@@ -1,7 +1,6 @@
 package org.entando.entando.aps.servlet.security;
 
 import com.agiletec.aps.system.SystemConstants;
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.authorization.Authorization;
 import com.agiletec.aps.system.services.group.Group;
 import com.agiletec.aps.system.services.role.Permission;
@@ -40,6 +39,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
+
+import org.entando.entando.ent.exception.EntException;
 
 @Service
 public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessingFilter implements AuthenticationFailureHandler {
@@ -110,7 +111,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
             keycloakGroupManager.processNewUser(user);
 
             return userAuthentication;
-        } catch (ApsSystemException e) {
+        } catch (EntException e) {
             log.error("System exception", e);
             throw new InsufficientAuthenticationException("error parsing OAuth parameters");
         }

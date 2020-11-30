@@ -1,6 +1,5 @@
 package org.entando.entando.keycloak.services;
 
-import com.agiletec.aps.system.exception.ApsSystemException;
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+
+import org.entando.entando.ent.exception.EntException;
 
 public class AuthenticationProviderManagerTest {
 
@@ -26,7 +27,7 @@ public class AuthenticationProviderManagerTest {
     }
 
     @Test
-    public void testGetUser() throws ApsSystemException {
+    public void testGetUser() throws EntException {
         when(userManager.getUser(anyString())).thenReturn(userDetails);
         final UserDetails user = manager.getUser("admin");
         verify(userManager, times(1)).getUser(eq("admin"));
@@ -34,7 +35,7 @@ public class AuthenticationProviderManagerTest {
     }
 
     @Test
-    public void testGetUserWithPassword() throws ApsSystemException {
+    public void testGetUserWithPassword() throws EntException {
         when(userManager.getUser(anyString(), anyString())).thenReturn(userDetails);
         final UserDetails user = manager.getUser("admin", "password");
         verify(userManager, times(1)).getUser(eq("admin"), eq("password"));
