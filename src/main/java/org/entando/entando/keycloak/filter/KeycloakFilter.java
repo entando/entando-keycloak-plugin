@@ -169,7 +169,9 @@ public class KeycloakFilter implements Filter {
 
         if (StringUtils.isNotEmpty(error)) {
             if ("unsupported_response_type".equals(error)) {
-                log.error(errorDescription + ". For more details, refer to the wiki " + wiki(KeycloakWiki.EN_APP_STANDARD_FLOW_DISABLED));
+                log.error("{}. For more details, refer to the wiki {}",
+                        errorDescription,
+                        wiki(KeycloakWiki.EN_APP_STANDARD_FLOW_DISABLED));
             }
             throw new EntandoTokenException(errorDescription, request, "guest");
         }
