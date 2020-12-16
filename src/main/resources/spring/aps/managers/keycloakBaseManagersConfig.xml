@@ -46,6 +46,9 @@
                 <entry key="cspHeaderExtraConfig">
                     <value>${csp.header.extraConfig}</value>
                 </entry>
+                <entry key="cspEnabled">
+                    <value>${csp.header.enabled}</value>
+                </entry>
             </map>
         </property>
         <property name="securityConfigPath">
@@ -57,9 +60,7 @@
             </bean>
         </property>
         <property name="cacheWrapper">
-            <bean class="com.agiletec.aps.system.services.baseconfig.cache.ConfigManagerCacheWrapper">
-                <property name="springCacheManager" ref="springCacheManager" />
-            </bean>
+            <bean class="com.agiletec.aps.system.services.baseconfig.cache.ConfigManagerCacheWrapper" />
         </property>
     </bean>
 
