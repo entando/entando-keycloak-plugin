@@ -25,7 +25,7 @@ pipelineConfig:
         steps:
           - dir: preview/preview-chart
             steps:
-              - sh: make preview
+              - sh: helm init --stable-repo-url=https://charts.helm.sh/stable --client-only && make preview
                 name: make-preview
               - sh: jx preview --name ${REPO_NAME}-${PIPELINE_CODE}pr${PULL_NUMBER} --app $APP_NAME --dir ../.. --namespace ${REPO_NAME}-${PIPELINE_CODE}pr${PULL_NUMBER}
                 name: jx-preview
