@@ -42,7 +42,7 @@
         </repository>
     </repositories>
     <properties>
-        <entando-engine.version>6.3.7</entando-engine.version>
+        <entando-engine.version>6.3.17</entando-engine.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
