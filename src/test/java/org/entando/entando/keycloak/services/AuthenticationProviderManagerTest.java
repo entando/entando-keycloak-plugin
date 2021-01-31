@@ -2,7 +2,6 @@ package org.entando.entando.keycloak.services;
 
 import com.agiletec.aps.system.services.user.UserDetails;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;

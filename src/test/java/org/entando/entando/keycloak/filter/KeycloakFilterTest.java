@@ -78,12 +78,12 @@ public class KeycloakFilterTest {
 
         when(configuration.getAuthUrl()).thenReturn("https://dev.entando.org/auth");
         when(configuration.getRealm()).thenReturn("entando");
-        when(configuration.getClientId()).thenReturn("entando-app");
+        Mockito.lenient().when(configuration.getClientId()).thenReturn("entando-app");
         when(configuration.getPublicClientId()).thenReturn("entando-web");
-        when(configuration.getClientSecret()).thenReturn("a76d5398-fc2f-4859-bf57-f043a89eea70");
+        Mockito.lenient().when(configuration.getClientSecret()).thenReturn("a76d5398-fc2f-4859-bf57-f043a89eea70");
 
         keycloakFilter = new KeycloakFilter(configuration, oidcService, providerManager, keycloakGroupManager, userManager);
-        when(request.getSession()).thenReturn(session);
+        Mockito.lenient().when(request.getSession()).thenReturn(session);
     }
 
     @Test
@@ -101,7 +101,7 @@ public class KeycloakFilterTest {
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn("/do/login");
         when(request.getRequestURL()).thenReturn(new StringBuffer(loginEndpoint));
-        when(request.getParameter(eq("redirectTo"))).thenReturn(requestRedirect);
+        Mockito.lenient().when(request.getParameter(eq("redirectTo"))).thenReturn(requestRedirect);
 
         final String redirect = "http://dev.entando.org/auth/realms/entando/protocol/openid-connect/auth";
         when(oidcService.getRedirectUrl(any(), any())).thenReturn(redirect);
@@ -161,24 +161,24 @@ public class KeycloakFilterTest {
 
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getSession()).thenReturn(session);
-        when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_STATE))).thenReturn(state);
-        when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_REDIRECT))).thenReturn("/main.html");
+        Mockito.lenient().when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_STATE))).thenReturn(state);
+        Mockito.lenient().when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_REDIRECT))).thenReturn("/main.html");
 
         // error provided by keycloak
-        when(request.getParameter(eq("error"))).thenReturn("invalid_code");
-        when(request.getParameter(eq("error_description"))).thenReturn("Any description provided by keycloak");
+        Mockito.lenient().when(request.getParameter(eq("error"))).thenReturn("invalid_code");
+        Mockito.lenient().when(request.getParameter(eq("error_description"))).thenReturn("Any description provided by keycloak");
 
         when(request.getServletPath()).thenReturn("/do/login");
         when(request.getParameter(eq("code"))).thenReturn(authorizationCode);
         when(request.getParameter(eq("state"))).thenReturn(state);
         when(request.getRequestURL()).thenReturn(new StringBuffer(loginEndpoint));
-        when(request.getContextPath()).thenReturn("https://dev.entando.org/entando-app");
+        Mockito.lenient().when(request.getContextPath()).thenReturn("https://dev.entando.org/entando-app");
 
-        when(oidcService.requestToken(anyString(), anyString())).thenReturn(authResponse);
-        when(authResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(authResponse.getBody()).thenReturn(auth);
-        when(auth.getAccessToken()).thenReturn("access-token-over-here");
-        when(auth.getRefreshToken()).thenReturn("refresh-token-over-here");
+        Mockito.lenient().when(oidcService.requestToken(anyString(), anyString())).thenReturn(authResponse);
+        Mockito.lenient().when(authResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        Mockito.lenient().when(authResponse.getBody()).thenReturn(auth);
+        Mockito.lenient().when(auth.getAccessToken()).thenReturn("access-token-over-here");
+        Mockito.lenient().when(auth.getRefreshToken()).thenReturn("refresh-token-over-here");
         Assertions.assertThrows(EntandoTokenException.class, () -> {
             keycloakFilter.doFilter(request, response, filterChain);
         });
@@ -192,8 +192,8 @@ public class KeycloakFilterTest {
 
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getSession()).thenReturn(session);
-        when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_STATE))).thenReturn(state);
-        when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_REDIRECT))).thenReturn("/main.html");
+        Mockito.lenient().when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_STATE))).thenReturn(state);
+        Mockito.lenient().when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_REDIRECT))).thenReturn("/main.html");
 
         when(request.getServletPath()).thenReturn("/do/login");
         when(request.getParameter(eq("code"))).thenReturn(authorizationCode);
@@ -219,7 +219,7 @@ public class KeycloakFilterTest {
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn("/do/login");
         when(request.getRequestURL()).thenReturn(new StringBuffer(loginEndpoint));
-        when(request.getParameter(eq("redirectTo"))).thenReturn(requestRedirect);
+        Mockito.lenient().when(request.getParameter(eq("redirectTo"))).thenReturn(requestRedirect);
 
         final String redirect = "http://dev.entando.org/auth/realms/entando/protocol/openid-connect/auth";
         when(oidcService.getRedirectUrl(any(), any())).thenReturn(redirect);
@@ -253,7 +253,7 @@ public class KeycloakFilterTest {
 
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn("/do/main");
-        when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
+        Mockito.lenient().when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
 
         keycloakFilter.doFilter(request, response, filterChain);
         verify(filterChain, times(1)).doFilter(any(), any());
@@ -266,7 +266,7 @@ public class KeycloakFilterTest {
 
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn(path);
-        when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
+        Mockito.lenient().when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
 
         when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_ACCESS_TOKEN))).thenReturn("access-token-over-here");
         when(oidcService.validateToken(anyString())).thenReturn(accessTokenResponse);
@@ -291,7 +291,7 @@ public class KeycloakFilterTest {
 
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn(path);
-        when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
+        Mockito.lenient().when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
 
         when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_ACCESS_TOKEN))).thenReturn("access-token-over-here");
         when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_REFRESH_TOKEN))).thenReturn("refresh-token-over-here");
@@ -324,7 +324,7 @@ public class KeycloakFilterTest {
 
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn(path);
-        when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
+        Mockito.lenient().when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
 
         when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_ACCESS_TOKEN))).thenReturn("access-token-over-here");
         when(session.getAttribute(eq(KeycloakFilter.SESSION_PARAM_REFRESH_TOKEN))).thenReturn("refresh-token-over-here");
@@ -355,7 +355,7 @@ public class KeycloakFilterTest {
 
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn(path);
-        when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
+        Mockito.lenient().when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
 
         final StringWriter writer = new StringWriter();
         when(response.getOutputStream()).thenReturn(new ServletOutputStreamWrapper(writer));

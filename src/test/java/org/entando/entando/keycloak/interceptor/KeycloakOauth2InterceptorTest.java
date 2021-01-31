@@ -7,7 +7,6 @@ import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.web.common.annotation.RestAccessControl;
 import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,8 +56,8 @@ public class KeycloakOauth2InterceptorTest {
         interceptor = new KeycloakOauth2Interceptor();
         interceptor.setAuthorizationManager(authorizationManager);
         SecurityContextHolder.getContext().setAuthentication(null);
-        when(resp.getBody()).thenReturn(accessToken);
-        when(request.getSession()).thenReturn(session);
+        Mockito.lenient().when(resp.getBody()).thenReturn(accessToken);
+        Mockito.lenient().when(request.getSession()).thenReturn(session);
     }
 
     @Test
@@ -90,13 +90,13 @@ public class KeycloakOauth2InterceptorTest {
     @Test
     public void testSuccess() {
         mockAccessControl();
-        when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(accessToken.isActive()).thenReturn(true);
-        when(accessToken.getUsername()).thenReturn("admin");
+        Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
+        Mockito.lenient().when(accessToken.isActive()).thenReturn(true);
+        Mockito.lenient().when(accessToken.getUsername()).thenReturn("admin");
         when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(true);
         SecurityContextHolder.getContext().setAuthentication(new UserAuthentication(userDetails));
 
-        when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
+        Mockito.lenient().when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
 
         final boolean allowed = interceptor.preHandle(request, response, method);
         assertThat(allowed).isTrue();
@@ -109,11 +109,11 @@ public class KeycloakOauth2InterceptorTest {
     @Test
     public void testWithoutPermission() {
         mockAccessControl();
-        when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(accessToken.isActive()).thenReturn(true);
-        when(accessToken.getUsername()).thenReturn("admin");
-        when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(false);
-        when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
+        Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
+        Mockito.lenient().when(accessToken.isActive()).thenReturn(true);
+        Mockito.lenient().when(accessToken.getUsername()).thenReturn("admin");
+        Mockito.lenient().when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(false);
+        Mockito.lenient().when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
         Assertions.assertThrows(EntandoAuthorizationException.class, () -> {
             interceptor.preHandle(request, response, method);
         });
@@ -122,11 +122,11 @@ public class KeycloakOauth2InterceptorTest {
     @Test
     public void testUserNotFound() {
         mockAccessControl();
-        when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(accessToken.isActive()).thenReturn(true);
-        when(accessToken.getUsername()).thenReturn("admin");
-        when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(false);
-        when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
+        Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
+        Mockito.lenient().when(accessToken.isActive()).thenReturn(true);
+        Mockito.lenient().when(accessToken.getUsername()).thenReturn("admin");
+        Mockito.lenient().when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(false);
+        Mockito.lenient().when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
         Assertions.assertThrows(EntandoAuthorizationException.class, () -> {
             interceptor.preHandle(request, response, method);
         });
@@ -135,8 +135,8 @@ public class KeycloakOauth2InterceptorTest {
     @Test
     public void testUnauthorizedValidation() {
         mockAccessControl();
-        when(resp.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED);
-        when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
+        Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED);
+        Mockito.lenient().when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
         Assertions.assertThrows(EntandoAuthorizationException.class, () -> {
             interceptor.preHandle(request, response, method);
         });
@@ -145,11 +145,11 @@ public class KeycloakOauth2InterceptorTest {
     @Test
     public void testInactiveToken() {
         mockAccessControl();
-        when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(accessToken.isActive()).thenReturn(false);
-        when(accessToken.getUsername()).thenReturn("admin");
-        when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(true);
-        when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
+        Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
+        Mockito.lenient().when(accessToken.isActive()).thenReturn(false);
+        Mockito.lenient().when(accessToken.getUsername()).thenReturn("admin");
+        Mockito.lenient().when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(true);
+        Mockito.lenient().when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
         Assertions.assertThrows(EntandoAuthorizationException.class, () -> {
             interceptor.preHandle(request, response, method);
         });

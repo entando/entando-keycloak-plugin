@@ -15,7 +15,6 @@ import org.entando.entando.keycloak.services.oidc.model.TokenRoles;
 import org.entando.entando.mockhelper.UserMockHelper;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
