@@ -8,8 +8,6 @@ import org.entando.entando.keycloak.services.oidc.exception.InvalidCredentialsEx
 import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
@@ -21,6 +19,13 @@ import java.util.concurrent.CompletableFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.entando.entando.keycloak.services.UserManagerIT.activeUser;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class OpenIDConnectServiceIT {
 
     private static final String USERNAME = "iddqd";
@@ -32,9 +37,8 @@ public class OpenIDConnectServiceIT {
     private OpenIDConnectService oidcService;
     private KeycloakUserManager userManager;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
         oidcService = new OpenIDConnectService(configuration);
         final KeycloakService keycloakService = new KeycloakService(configuration, oidcService);
@@ -43,16 +47,20 @@ public class OpenIDConnectServiceIT {
         KeycloakTestConfiguration.deleteUsers();
     }
 
-    @Test(expected = CredentialsExpiredException.class)
+    @Test
     public void testLoginWithExpiredCredentials() throws OidcException {
         userManager.addUser(activeUser(USERNAME, PASSWORD));
-        oidcService.login(USERNAME, PASSWORD);
+        Assertions.assertThrows(CredentialsExpiredException.class, () -> {
+            oidcService.login(USERNAME, PASSWORD);
+        });
     }
 
-    @Test(expected = InvalidCredentialsException.class)
+    @Test
     public void testLoginWithInvalidCredentials() throws OidcException {
         userManager.addUser(activeUser(USERNAME, PASSWORD));
-        oidcService.login(USERNAME, "woodstock");
+        Assertions.assertThrows(InvalidCredentialsException.class, () -> {
+            oidcService.login(USERNAME, "woodstock");
+        });
     }
 
     @Test

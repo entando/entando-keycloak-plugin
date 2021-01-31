@@ -12,11 +12,15 @@ import org.entando.entando.ent.exception.EntException;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.web.user.model.UserPasswordRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class UserManagerIT {
 
     private static final String USERNAME = "marine";
@@ -29,10 +33,8 @@ public class UserManagerIT {
 
     private KeycloakUserManager userManager;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
         final OpenIDConnectService oidcService = new OpenIDConnectService(configuration);
         final KeycloakService keycloakService = new KeycloakService(configuration, oidcService);
@@ -178,11 +180,13 @@ public class UserManagerIT {
         assertThat(userManager.getUser(USERNAME, "qwer1234")).isNull();
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testGetUserDetailsException() throws EntException {
         userManager.addUser(activeUser());
         doThrow(new EntException(USERNAME)).when(authorizationManager).getUserAuthorizations(anyString());
-        userManager.getUser(USERNAME);
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            userManager.getUser(USERNAME);
+        });
     }
 
     private static UserDetails activeUser() {

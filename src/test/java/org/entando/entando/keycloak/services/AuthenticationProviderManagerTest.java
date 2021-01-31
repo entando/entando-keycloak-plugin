@@ -1,8 +1,6 @@
 package org.entando.entando.keycloak.services;
 
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -12,7 +10,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import org.entando.entando.ent.exception.EntException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class AuthenticationProviderManagerTest {
 
     @Mock private KeycloakUserManager userManager;
@@ -20,9 +23,8 @@ public class AuthenticationProviderManagerTest {
 
     private KeycloakAuthenticationProviderManager manager;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         manager = new KeycloakAuthenticationProviderManager(userManager);
     }
 

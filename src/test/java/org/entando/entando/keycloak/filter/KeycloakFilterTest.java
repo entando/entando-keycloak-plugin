@@ -13,8 +13,6 @@ import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
 import org.entando.entando.web.common.exceptions.EntandoTokenException;
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -44,7 +42,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.entando.entando.ent.exception.EntException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class KeycloakFilterTest {
 
     @Mock private KeycloakConfiguration configuration;
@@ -69,9 +73,8 @@ public class KeycloakFilterTest {
 
     private KeycloakFilter keycloakFilter;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
 
         when(configuration.getAuthUrl()).thenReturn("https://dev.entando.org/auth");
         when(configuration.getRealm()).thenReturn("entando");
@@ -150,7 +153,7 @@ public class KeycloakFilterTest {
         verify(session, times(1)).setAttribute(eq(KeycloakFilter.SESSION_PARAM_REDIRECT), isNull());
     }
 
-    @Test(expected = EntandoTokenException.class)
+    @Test
     public void testAuthenticationFlowWithError() throws IOException, ServletException {
         final String loginEndpoint = "https://dev.entando.org/entando-app/do/login";
         final String state = "0ca97afd-f0b0-4860-820a-b7cd1414f69c";
@@ -176,8 +179,9 @@ public class KeycloakFilterTest {
         when(authResponse.getBody()).thenReturn(auth);
         when(auth.getAccessToken()).thenReturn("access-token-over-here");
         when(auth.getRefreshToken()).thenReturn("refresh-token-over-here");
-
-        keycloakFilter.doFilter(request, response, filterChain);
+        Assertions.assertThrows(EntandoTokenException.class, () -> {
+            keycloakFilter.doFilter(request, response, filterChain);
+        });
     }
 
     @Test
@@ -207,7 +211,7 @@ public class KeycloakFilterTest {
         verify(response, times(1)).sendRedirect(eq("https://dev.entando.org/entando-app/main.html"));
     }
 
-    @Test(expected = EntandoTokenException.class)
+    @Test
     public void testAuthenticationWithInvalidRedirectURL() throws IOException, ServletException {
         final String requestRedirect = "https://not.authorized.url";
         final String loginEndpoint = "https://dev.entando.org/entando-app/do/login";
@@ -219,8 +223,9 @@ public class KeycloakFilterTest {
 
         final String redirect = "http://dev.entando.org/auth/realms/entando/protocol/openid-connect/auth";
         when(oidcService.getRedirectUrl(any(), any())).thenReturn(redirect);
-
-        keycloakFilter.doFilter(request, response, filterChain);
+        Assertions.assertThrows(EntandoTokenException.class, () -> {
+            keycloakFilter.doFilter(request, response, filterChain);
+        });
         verify(filterChain, times(0)).doFilter(any(), any());
         verify(response, times(1)).sendRedirect(redirect);
     }
