@@ -33,7 +33,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class KeycloakOauth2InterceptorTest {
+class KeycloakOauth2InterceptorTest {
 
     private static final String[] PERMISSION = {"my-permission"};
 

@@ -50,7 +50,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class KeycloakFilterTest {
+class KeycloakFilterTest {
 
     @Mock private KeycloakConfiguration configuration;
     @Mock private OpenIDConnectService oidcService;
