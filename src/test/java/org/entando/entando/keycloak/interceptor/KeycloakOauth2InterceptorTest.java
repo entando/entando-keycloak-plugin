@@ -61,14 +61,14 @@ class KeycloakOauth2InterceptorTest {
     }
 
     @Test
-    public void testInterceptorOkWhenNoPermissionAnnotation() {
+    void testInterceptorOkWhenNoPermissionAnnotation() {
         when(method.getMethodAnnotation(same(RestAccessControl.class))).thenReturn(null);
         final boolean allowed = interceptor.preHandle(request, response, method);
         assertThat(allowed).isTrue();
     }
 
     @Test
-    public void testWithoutAuthorizationHeader() {
+    void testWithoutAuthorizationHeader() {
         mockAccessControl();
         Mockito.lenient().when(request.getHeader(anyString())).thenReturn(null);
         Assertions.assertThrows(EntandoAuthorizationException.class, () -> {
@@ -78,7 +78,7 @@ class KeycloakOauth2InterceptorTest {
     }
 
     @Test
-    public void testWithInvalidAuthorizationHeader() {
+    void testWithInvalidAuthorizationHeader() {
         mockAccessControl();
         Mockito.lenient().when(request.getHeader(eq("Authorization"))).thenReturn("I'm an invalid bearer token");
         Assertions.assertThrows(EntandoAuthorizationException.class, () -> {
@@ -88,7 +88,7 @@ class KeycloakOauth2InterceptorTest {
     }
 
     @Test
-    public void testSuccess() {
+    void testSuccess() {
         mockAccessControl();
         Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
         Mockito.lenient().when(accessToken.isActive()).thenReturn(true);
@@ -107,7 +107,7 @@ class KeycloakOauth2InterceptorTest {
     }
 
     @Test
-    public void testWithoutPermission() {
+    void testWithoutPermission() {
         mockAccessControl();
         Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
         Mockito.lenient().when(accessToken.isActive()).thenReturn(true);
@@ -120,7 +120,7 @@ class KeycloakOauth2InterceptorTest {
     }
 
     @Test
-    public void testUserNotFound() {
+    void testUserNotFound() {
         mockAccessControl();
         Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
         Mockito.lenient().when(accessToken.isActive()).thenReturn(true);
@@ -133,7 +133,7 @@ class KeycloakOauth2InterceptorTest {
     }
 
     @Test
-    public void testUnauthorizedValidation() {
+    void testUnauthorizedValidation() {
         mockAccessControl();
         Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.UNAUTHORIZED);
         Mockito.lenient().when(request.getHeader(eq("Authorization"))).thenReturn("Bearer VALIDTOKEN");
@@ -143,7 +143,7 @@ class KeycloakOauth2InterceptorTest {
     }
 
     @Test
-    public void testInactiveToken() {
+    void testInactiveToken() {
         mockAccessControl();
         Mockito.lenient().when(resp.getStatusCode()).thenReturn(HttpStatus.OK);
         Mockito.lenient().when(accessToken.isActive()).thenReturn(false);

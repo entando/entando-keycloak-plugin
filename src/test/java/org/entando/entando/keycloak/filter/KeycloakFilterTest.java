@@ -88,7 +88,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testConfigurationDisabled() throws IOException, ServletException {
+    void testConfigurationDisabled() throws IOException, ServletException {
         when(configuration.isEnabled()).thenReturn(false);
         keycloakFilter.doFilter(request, response, filterChain);
         verify(filterChain, times(1)).doFilter(same(request), same(response));
@@ -96,7 +96,7 @@ class KeycloakFilterTest {
 
     @Disabled("Disabled due to junit5 integration")
     @Test
-    public void testAuthenticationFlow() throws IOException, ServletException, EntException {
+    void testAuthenticationFlow() throws IOException, ServletException, EntException {
         final String requestRedirect = "https://dev.entando.org/entando-app/main.html";
         final String loginEndpoint = "https://dev.entando.org/entando-app/do/login";
 
@@ -156,7 +156,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testAuthenticationFlowWithError() throws IOException, ServletException {
+    void testAuthenticationFlowWithError() throws IOException, ServletException {
         final String loginEndpoint = "https://dev.entando.org/entando-app/do/login";
         final String state = "0ca97afd-f0b0-4860-820a-b7cd1414f69c";
         final String authorizationCode = "the-authorization-code-from-keycloak";
@@ -187,7 +187,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testAuthenticationWithInvalidAuthCode() throws IOException, ServletException {
+    void testAuthenticationWithInvalidAuthCode() throws IOException, ServletException {
         final String loginEndpoint = "https://dev.entando.org/entando-app/do/login";
         final String state = "0ca97afd-f0b0-4860-820a-b7cd1414f69c";
         final String authorizationCode = "the-authorization-code-from-keycloak";
@@ -214,7 +214,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testAuthenticationWithInvalidRedirectURL() throws IOException, ServletException {
+    void testAuthenticationWithInvalidRedirectURL() throws IOException, ServletException {
         final String requestRedirect = "https://not.authorized.url";
         final String loginEndpoint = "https://dev.entando.org/entando-app/do/login";
 
@@ -233,7 +233,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testLogout() throws IOException, ServletException {
+    void testLogout() throws IOException, ServletException {
         final String loginEndpoint = "https://dev.entando.org/entando-app/do/logout.action";
 
         when(configuration.isEnabled()).thenReturn(true);
@@ -250,7 +250,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testNormalFlow() throws IOException, ServletException {
+    void testNormalFlow() throws IOException, ServletException {
         final String endpoint = "https://dev.entando.org/entando-app/do/main";
 
         when(configuration.isEnabled()).thenReturn(true);
@@ -262,7 +262,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testTokenValidation() throws IOException, ServletException {
+    void testTokenValidation() throws IOException, ServletException {
         final String path = "/do/main";
         final String endpoint = "https://dev.entando.org/entando-app" + path;
 
@@ -287,7 +287,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testTokenValidationAndRefreshToken() throws IOException, ServletException {
+    void testTokenValidationAndRefreshToken() throws IOException, ServletException {
         final String path = "/do/main";
         final String endpoint = "https://dev.entando.org/entando-app" + path;
 
@@ -320,7 +320,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testTokenValidationWithTokenAndRefreshExpired() throws IOException, ServletException {
+    void testTokenValidationWithTokenAndRefreshExpired() throws IOException, ServletException {
         final String path = "/do/main";
         final String endpoint = "https://dev.entando.org/entando-app" + path;
 
@@ -351,7 +351,7 @@ class KeycloakFilterTest {
     }
 
     @Test
-    public void testKeycloakJsonEndpoint() throws IOException, ServletException {
+    void testKeycloakJsonEndpoint() throws IOException, ServletException {
         final String path = "/keycloak.json";
         final String endpoint = "https://dev.entando.org/entando-app" + path;
 

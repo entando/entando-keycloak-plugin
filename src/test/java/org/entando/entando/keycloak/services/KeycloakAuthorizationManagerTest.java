@@ -44,7 +44,7 @@ class KeycloakAuthorizationManagerTest {
     }
 
     @Test
-    public void testGroupCreation() throws EntException {
+    void testGroupCreation() throws EntException {
         when(configuration.getDefaultAuthorizations()).thenReturn("readers");
         when(groupManager.getGroup(anyString())).thenReturn(null);
         when(userDetails.getAuthorizations()).thenReturn(new ArrayList<>());
@@ -66,7 +66,7 @@ class KeycloakAuthorizationManagerTest {
     }
 
     @Test
-    public void testGroupAndRoleCreation() throws EntException {
+    void testGroupAndRoleCreation() throws EntException {
         when(configuration.getDefaultAuthorizations()).thenReturn("readers:read-all");
         when(groupManager.getGroup(anyString())).thenReturn(null);
         when(roleManager.getRole(anyString())).thenReturn(null);
@@ -94,7 +94,7 @@ class KeycloakAuthorizationManagerTest {
     }
 
     @Test
-    public void testVerification() {
+    void testVerification() {
         final Authorization readers = authorization("readers", "read-all");
         final Authorization writers = authorization("writers", "write-all");
 

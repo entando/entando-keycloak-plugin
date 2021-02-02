@@ -28,7 +28,7 @@ class AuthenticationProviderManagerTest {
     }
 
     @Test
-    public void testGetUser() throws EntException {
+    void testGetUser() throws EntException {
         when(userManager.getUser(anyString())).thenReturn(userDetails);
         final UserDetails user = manager.getUser("admin");
         verify(userManager, times(1)).getUser(eq("admin"));
@@ -36,7 +36,7 @@ class AuthenticationProviderManagerTest {
     }
 
     @Test
-    public void testGetUserWithPassword() throws EntException {
+    void testGetUserWithPassword() throws EntException {
         when(userManager.getUser(anyString(), anyString())).thenReturn(userDetails);
         final UserDetails user = manager.getUser("admin", "password");
         verify(userManager, times(1)).getUser(eq("admin"), eq("password"));
@@ -44,12 +44,12 @@ class AuthenticationProviderManagerTest {
     }
 
     @Test
-    public void testAuthenticate() {
+    void testAuthenticate() {
         assertThat(manager.authenticate(null)).isNull();
     }
 
     @Test
-    public void testLoadUserByUsername() {
+    void testLoadUserByUsername() {
         assertThat(manager.loadUserByUsername("admin")).isNull();
     }
 
