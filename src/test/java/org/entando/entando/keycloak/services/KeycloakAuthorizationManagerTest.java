@@ -7,11 +7,8 @@ import com.agiletec.aps.system.services.group.GroupManager;
 import com.agiletec.aps.system.services.role.Role;
 import com.agiletec.aps.system.services.role.RoleManager;
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +22,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.entando.entando.ent.exception.EntException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-public class KeycloakAuthorizationManagerTest {
+@ExtendWith(MockitoExtension.class)
+class KeycloakAuthorizationManagerTest {
 
     @Mock private UserDetails userDetails;
     @Mock private KeycloakConfiguration configuration;
@@ -36,14 +38,13 @@ public class KeycloakAuthorizationManagerTest {
 
     private KeycloakAuthorizationManager manager;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         manager = new KeycloakAuthorizationManager(configuration, authorizationManager, groupManager, roleManager);
     }
 
     @Test
-    public void testGroupCreation() throws EntException {
+    void testGroupCreation() throws EntException {
         when(configuration.getDefaultAuthorizations()).thenReturn("readers");
         when(groupManager.getGroup(anyString())).thenReturn(null);
         when(userDetails.getAuthorizations()).thenReturn(new ArrayList<>());
@@ -65,7 +66,7 @@ public class KeycloakAuthorizationManagerTest {
     }
 
     @Test
-    public void testGroupAndRoleCreation() throws EntException {
+    void testGroupAndRoleCreation() throws EntException {
         when(configuration.getDefaultAuthorizations()).thenReturn("readers:read-all");
         when(groupManager.getGroup(anyString())).thenReturn(null);
         when(roleManager.getRole(anyString())).thenReturn(null);
@@ -93,7 +94,7 @@ public class KeycloakAuthorizationManagerTest {
     }
 
     @Test
-    public void testVerification() {
+    void testVerification() {
         final Authorization readers = authorization("readers", "read-all");
         final Authorization writers = authorization("writers", "write-all");
 

@@ -8,10 +8,7 @@ import org.entando.entando.keycloak.services.oidc.exception.InvalidCredentialsEx
 import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
@@ -21,7 +18,14 @@ import java.util.concurrent.CompletableFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.entando.entando.keycloak.services.UserManagerIT.activeUser;
 
-public class OpenIDConnectServiceIT {
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class OpenIDConnectServiceIT {
 
     private static final String USERNAME = "iddqd";
     private static final String PASSWORD = "idkfa";
@@ -32,9 +36,8 @@ public class OpenIDConnectServiceIT {
     private OpenIDConnectService oidcService;
     private KeycloakUserManager userManager;
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
+    @BeforeEach
+    void setUp() {
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
         oidcService = new OpenIDConnectService(configuration);
         final KeycloakService keycloakService = new KeycloakService(configuration, oidcService);
@@ -43,20 +46,24 @@ public class OpenIDConnectServiceIT {
         KeycloakTestConfiguration.deleteUsers();
     }
 
-    @Test(expected = CredentialsExpiredException.class)
-    public void testLoginWithExpiredCredentials() throws OidcException {
+    @Test
+    void testLoginWithExpiredCredentials() throws OidcException {
         userManager.addUser(activeUser(USERNAME, PASSWORD));
-        oidcService.login(USERNAME, PASSWORD);
-    }
-
-    @Test(expected = InvalidCredentialsException.class)
-    public void testLoginWithInvalidCredentials() throws OidcException {
-        userManager.addUser(activeUser(USERNAME, PASSWORD));
-        oidcService.login(USERNAME, "woodstock");
+        Assertions.assertThrows(CredentialsExpiredException.class, () -> {
+            oidcService.login(USERNAME, PASSWORD);
+        });
     }
 
     @Test
-    public void testLoginSuccessfulAndTokenValidation() throws OidcException {
+    void testLoginWithInvalidCredentials() throws OidcException {
+        userManager.addUser(activeUser(USERNAME, PASSWORD));
+        Assertions.assertThrows(InvalidCredentialsException.class, () -> {
+            oidcService.login(USERNAME, "woodstock");
+        });
+    }
+
+    @Test
+    void testLoginSuccessfulAndTokenValidation() throws OidcException {
         userManager.addUser(activeUser(USERNAME, "woodstock"));
         userManager.changePassword(USERNAME, PASSWORD);
         final AuthResponse response = oidcService.login(USERNAME, PASSWORD);
@@ -72,7 +79,7 @@ public class OpenIDConnectServiceIT {
     }
 
     @Test
-    public void testLoginSuccessfulAndTokenRevoked() throws OidcException {
+    void testLoginSuccessfulAndTokenRevoked() throws OidcException {
         userManager.addUser(activeUser(USERNAME, "woodstock"));
         userManager.changePassword(USERNAME, PASSWORD);
 
