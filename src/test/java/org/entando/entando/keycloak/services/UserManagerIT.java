@@ -12,12 +12,15 @@ import org.entando.entando.ent.exception.EntException;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.web.user.model.UserPasswordRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-public class UserManagerIT {
+@ExtendWith(MockitoExtension.class)
+class UserManagerIT {
 
     private static final String USERNAME = "marine";
 
@@ -29,10 +32,8 @@ public class UserManagerIT {
 
     private KeycloakUserManager userManager;
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-
+    @BeforeEach
+    void setUp() {
         final KeycloakConfiguration configuration = KeycloakTestConfiguration.getConfiguration();
         final OpenIDConnectService oidcService = new OpenIDConnectService(configuration);
         final KeycloakService keycloakService = new KeycloakService(configuration, oidcService);
@@ -42,7 +43,7 @@ public class UserManagerIT {
     }
 
     @Test
-    public void testUsers() {
+    void testUsers() {
         assertThat(userManager.getUsers()).isEmpty();
 
         userManager.addUser(activeUser());
@@ -76,7 +77,7 @@ public class UserManagerIT {
     }
 
     @Test
-    public void testGetUser() {
+    void testGetUser() {
         userManager.addUser(activeUser());
         final UserDetails user = userManager.getUser(USERNAME);
         assertThat(user).hasFieldOrPropertyWithValue("username", USERNAME)
@@ -86,7 +87,7 @@ public class UserManagerIT {
     }
 
     @Test
-    public void testGetUsers() {
+    void testGetUsers() {
         userManager.addUser(activeUser());
         userManager.addUser(activeUser("cop"));
         userManager.addUser(activeUser("doomguy"));
@@ -101,7 +102,7 @@ public class UserManagerIT {
     }
 
     @Test
-    public void testConcatStringUsernames() {
+    void testConcatStringUsernames() {
         userManager.addUser(activeUser(USER_1));
         userManager.addUser(activeUser(USER_2));
         userManager.addUser(activeUser(USER_3));
@@ -127,7 +128,7 @@ public class UserManagerIT {
     }
 
     @Test
-    public void testAddUserAndAuthenticate() {
+    void testAddUserAndAuthenticate() {
         userManager.addUser(activeUser());
 
         UserDetails user = userManager.getUser(USERNAME, "qwer1234");
@@ -143,7 +144,7 @@ public class UserManagerIT {
     }
 
     @Test
-    public void testUserUpdatePassword() {
+    void testUserUpdatePassword() {
         userManager.addUser(activeUser());
 
         UserDetails user = userManager.getUser(USERNAME, "qwer1234");
@@ -162,7 +163,7 @@ public class UserManagerIT {
     }
 
     @Test
-    public void testUserUpdate() {
+    void testUserUpdate() {
         final User request = (User) activeUser();
         userManager.addUser(request);
         assertThat(userManager.getUser(USERNAME, "qwer1234")).isNotNull();
@@ -173,16 +174,18 @@ public class UserManagerIT {
     }
 
     @Test
-    public void testAddDisabledUserAndAuthenticate() {
+    void testAddDisabledUserAndAuthenticate() {
         userManager.addUser(disabledUser());
         assertThat(userManager.getUser(USERNAME, "qwer1234")).isNull();
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testGetUserDetailsException() throws EntException {
+    @Test
+    void testGetUserDetailsException() throws EntException {
         userManager.addUser(activeUser());
         doThrow(new EntException(USERNAME)).when(authorizationManager).getUserAuthorizations(anyString());
-        userManager.getUser(USERNAME);
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            userManager.getUser(USERNAME);
+        });
     }
 
     private static UserDetails activeUser() {
