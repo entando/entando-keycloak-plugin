@@ -6,7 +6,7 @@
     <parent>
         <artifactId>entando-core-parent</artifactId>
         <groupId>org.entando</groupId>
-        <version>6.3.15</version>
+        <version>6.3.16</version>
     </parent>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
