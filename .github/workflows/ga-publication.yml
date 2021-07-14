@@ -11,7 +11,7 @@ env:
 jobs:
   ga-publish:
     env:
-  ENTANDO_OPT_USE_PPL_TAG: "v1.0.1"
+      ENTANDO_OPT_USE_PPL_TAG: "v1.0.1"
       ENTANDO_OPT_REPO_BOM_URL: ${{ secrets.ENTANDO_OPT_REPO_BOM_URL }}
       PPL_CONTEXT: ${{ toJson(github) }}
       GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
