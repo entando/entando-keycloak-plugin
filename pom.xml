@@ -42,7 +42,7 @@
         </repository>
     </repositories>
     <properties>
-        <entando-core-bom.version>6.4.37</entando-core-bom.version>
+        <entando-core-bom.version>6.4.77</entando-core-bom.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
