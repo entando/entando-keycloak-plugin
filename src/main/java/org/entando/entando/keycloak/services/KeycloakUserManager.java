@@ -32,7 +32,7 @@ public class KeycloakUserManager extends AbstractParameterizableService implemen
     private final KeycloakService keycloakService;
     private final OpenIDConnectService oidcService;
 
-    public transient List<String> parameterNames = new ArrayList<>();
+    private List<String> parameterNames = new ArrayList<>();
 
     public KeycloakUserManager(final IAuthorizationManager authorizationManager,
             final KeycloakService keycloakService,
