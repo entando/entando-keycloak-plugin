@@ -3,10 +3,12 @@ package org.entando.entando.keycloak.services;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
+import com.agiletec.aps.system.common.AbstractParameterizableService;
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,14 +19,20 @@ import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.exception.CredentialsExpiredException;
 import org.entando.entando.keycloak.services.oidc.exception.OidcException;
 import org.entando.entando.keycloak.services.oidc.model.UserRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class KeycloakUserManager implements IUserManager {
+public class KeycloakUserManager extends AbstractParameterizableService implements IUserManager {
+
+    private static final Logger log = LoggerFactory.getLogger(KeycloakUserManager.class);
 
     private static final String ERRCODE_USER_NOT_FOUND = "1";
 
     private final IAuthorizationManager authorizationManager;
     private final KeycloakService keycloakService;
     private final OpenIDConnectService oidcService;
+
+    public transient List<String> parameterNames = new ArrayList<>();
 
     public KeycloakUserManager(final IAuthorizationManager authorizationManager,
             final KeycloakService keycloakService,
@@ -160,4 +168,13 @@ public class KeycloakUserManager implements IUserManager {
         return keycloakService.listUsers(username).stream().filter(f->f.getUsername().equals(username)).findFirst();
     }
 
+    @Override
+    protected List<String> getParameterNames() {
+        return parameterNames;
+    }
+
+    @Override
+    public void init() {
+        log.debug("{} ready", this.getClass().getName());
+    }
 }
