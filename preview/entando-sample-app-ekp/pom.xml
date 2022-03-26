@@ -33,7 +33,7 @@
     </repositories>
     <properties>
         <entando-engine.version>6.2.16</entando-engine.version>
-        <entando-admin-console.version>6.2.23</entando-admin-console.version>
+        <entando-admin-console.version>6.2.38</entando-admin-console.version>
         <entando-portal-ui.version>6.2.5</entando-portal-ui.version>
         <entando-plugin-jacms.version>6.2.11</entando-plugin-jacms.version>
         <entando-plugin-jpversioning.version>6.2.4</entando-plugin-jpversioning.version>
@@ -285,7 +285,7 @@
                 <skipAppBuilderImage>false</skipAppBuilderImage>
                 <jee.server>jetty</jee.server>
                 <entando.engine.address>localhost</entando.engine.address>
-                <app.builder.depends.on></app.builder.depends.on>
+                <app.builder.depends.on/>
 
                 <skipServerImage>true</skipServerImage>
                 <jboss.home.in.image>none</jboss.home.in.image>
@@ -370,7 +370,7 @@
             <properties>
                 <db.vendor>derby</db.vendor>
                 <skipDatabaseImage>true</skipDatabaseImage>
-                <entando.engine.depends.on></entando.engine.depends.on>
+                <entando.engine.depends.on/>
                 <!--DB connection properties-->
                 <portdb.database>entandoPort</portdb.database>
                 <portdb.url>jdbc:derby:${derby.base.folder}/${portdb.database};create=true</portdb.url>
