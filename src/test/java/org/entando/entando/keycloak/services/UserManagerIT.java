@@ -11,7 +11,7 @@ import java.util.List;
 import org.entando.entando.ent.exception.EntException;
 import org.entando.entando.keycloak.KeycloakTestConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
-import org.entando.entando.web.user.model.UserPasswordRequest;
+import org.entando.entando.web.user.model.UserUpdatePasswordRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -151,7 +151,7 @@ class UserManagerIT {
         assertThat(user).isNotNull();
         assertThat(user.isCredentialsNotExpired()).isFalse();
 
-        final UserPasswordRequest request = new UserPasswordRequest();
+        final UserUpdatePasswordRequest request = new UserUpdatePasswordRequest();
         request.setOldPassword("qwer1234");
         request.setNewPassword("1234qwer");
         request.setUsername(USERNAME);
