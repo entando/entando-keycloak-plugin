@@ -1,25 +1,24 @@
 package org.entando.entando.keycloak.filter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import com.jayway.jsonpath.JsonPath;
-import org.assertj.core.api.AbstractBooleanAssert;
-import org.assertj.core.api.AbstractCharSequenceAssert;
-import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
-import org.entando.entando.keycloak.services.KeycloakConfiguration;
-import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
-import org.entando.entando.keycloak.services.oidc.model.AccessToken;
-import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
-import org.entando.entando.web.common.exceptions.EntandoTokenException;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-
+import java.io.IOException;
+import java.io.StringWriter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -27,27 +26,26 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.io.StringWriter;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import org.assertj.core.api.AbstractBooleanAssert;
+import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.entando.entando.ent.exception.EntException;
+import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
+import org.entando.entando.keycloak.services.KeycloakConfiguration;
+import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
+import org.entando.entando.keycloak.services.oidc.model.AccessToken;
+import org.entando.entando.keycloak.services.oidc.model.AuthResponse;
+import org.entando.entando.web.common.exceptions.EntandoTokenException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
 class KeycloakFilterTest {
@@ -348,6 +346,44 @@ class KeycloakFilterTest {
         verify(session, times(1)).setAttribute(eq("user"), same(userDetails));
         verify(session, times(1)).setAttribute(eq(SystemConstants.SESSIONPARAM_CURRENT_USER), same(userDetails));
         verify(session, times(1)).setAttribute(eq(KeycloakFilter.SESSION_PARAM_ACCESS_TOKEN), isNull());
+    }
+
+    @Test
+    void apiCallShouldNotSaveUserOnSession() throws Exception {
+        when(configuration.isEnabled()).thenReturn(true);
+        when(request.getServletPath()).thenReturn("/api");
+
+        keycloakFilter.doFilter(request, response, filterChain);
+
+        verify(filterChain, times(1)).doFilter(any(), any());
+        verify(request, never()).getSession();
+    }
+
+    @Test
+    void testLoginWithAuthorizationCode() throws Exception {
+
+        final String path = "/do/login";
+        final String endpoint = "https://dev.entando.org/entando-app" + path;
+
+        when(configuration.isEnabled()).thenReturn(true);
+        when(request.getServletPath()).thenReturn(path);
+        when(request.getRequestURL()).thenReturn(new StringBuffer(endpoint));
+        when(request.getParameter("state")).thenReturn("<state>");
+        when(request.getParameter("code")).thenReturn("<code>");
+
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setAccessToken("<token>");
+        when(oidcService.requestToken(eq("<code>"), any())).thenReturn(ResponseEntity.ok().body(authResponse));
+
+        AccessToken token = new AccessToken();
+        token.setActive(true);
+        token.setUsername("<username>");
+        when(oidcService.validateToken("<token>")).thenReturn(ResponseEntity.ok().body(token));
+        when(providerManager.getUser("<username>")).thenReturn(userDetails);
+
+        keycloakFilter.doFilter(request, response, filterChain);
+
+        verify(session, times(1)).setAttribute(eq("user"), same(userDetails));
     }
 
     @Test
