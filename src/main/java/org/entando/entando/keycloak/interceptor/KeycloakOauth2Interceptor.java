@@ -2,7 +2,8 @@ package org.entando.entando.keycloak.interceptor;
 
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.UserDetails;
-import org.apache.commons.lang3.StringUtils;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.entando.entando.aps.servlet.security.UserAuthentication;
 import org.entando.entando.web.common.annotation.RestAccessControl;
 import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
@@ -13,9 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
 
@@ -37,11 +35,18 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
     }
 
     private void validateToken(final HttpServletRequest request, final String[] permissions) {
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication instanceof UserAuthentication)) {
+        UserDetails user = null;
+        if ("/api".equals(request.getServletPath())) {
+            user = (UserDetails) request.getAttribute("user");
+        } else {
+            final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication instanceof UserAuthentication) {
+                user = (UserDetails) authentication.getDetails();
+            }
+        }
+        if (user == null) {
             throw new EntandoAuthorizationException("invalid authentication", request, "guest");
         }
-        final UserDetails user = (UserDetails) authentication.getDetails();
         if (permissions != null) {
             boolean hasPermission = false;
             for (String permission : permissions) {

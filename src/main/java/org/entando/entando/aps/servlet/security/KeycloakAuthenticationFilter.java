@@ -1,5 +1,7 @@
 package org.entando.entando.aps.servlet.security;
 
+import static java.util.Optional.ofNullable;
+
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.authorization.Authorization;
 import com.agiletec.aps.system.services.group.Group;
@@ -9,6 +11,13 @@ import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.List;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.entando.entando.ent.exception.EntException;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
 import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
@@ -30,17 +39,6 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.NonceExpiredException;
 import org.springframework.stereotype.Service;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
-
-import static java.util.Optional.ofNullable;
-
-import org.entando.entando.ent.exception.EntException;
 
 @Service
 public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessingFilter implements AuthenticationFailureHandler {
@@ -77,8 +75,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
         if (authorization == null || !authorization.matches("^[Bb]earer .*")) {
             final UserDetails guestUser = userManager.getGuestUser();
             final GuestAuthentication guestAuthentication = new GuestAuthentication(guestUser);
-            SecurityContextHolder.getContext().setAuthentication(guestAuthentication);
-            saveUserOnSession(request, guestUser);
+            setUserOnContext(request, guestUser, guestAuthentication);
             return guestAuthentication;
         }
 
@@ -104,8 +101,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
                     .map(TokenRoles::getRoles)
                     .ifPresent(permissions -> addAuthorizations(permissions, user));
 
-            SecurityContextHolder.getContext().setAuthentication(userAuthentication);
-            saveUserOnSession(request, user);
+            setUserOnContext(request, user, userAuthentication);
 
             // TODO optimise to not check on every request
             keycloakGroupManager.processNewUser(user);
@@ -135,9 +131,17 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
                 });
     }
 
-    private void saveUserOnSession(final HttpServletRequest request, final UserDetails guestUser) {
-        request.getSession().setAttribute("user", guestUser);
-        request.getSession().setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, guestUser);
+    private void setUserOnContext(HttpServletRequest request, UserDetails user, Authentication authentication) {
+        if ("/api".equals(request.getServletPath())) {
+            if (request.getSession(false) != null) {
+                throw new AuthenticationException("API endpoints don't accept session cookies") {};
+            }
+            request.setAttribute("user", user);
+        } else {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            request.getSession().setAttribute("user", user);
+            request.getSession().setAttribute(SystemConstants.SESSIONPARAM_CURRENT_USER, user);
+        }
     }
 
     @Override
