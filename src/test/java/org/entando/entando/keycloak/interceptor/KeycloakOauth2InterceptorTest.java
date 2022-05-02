@@ -1,21 +1,5 @@
 package org.entando.entando.keycloak.interceptor;
 
-import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
-import com.agiletec.aps.system.services.user.UserDetails;
-import org.entando.entando.aps.servlet.security.UserAuthentication;
-import org.entando.entando.keycloak.services.oidc.model.AccessToken;
-import org.entando.entando.web.common.annotation.RestAccessControl;
-import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
-import org.mockito.Mock;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.method.HandlerMethod;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -25,12 +9,26 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
+import com.agiletec.aps.system.services.user.UserDetails;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import org.entando.entando.aps.servlet.security.UserAuthentication;
+import org.entando.entando.keycloak.services.oidc.model.AccessToken;
+import org.entando.entando.web.common.annotation.RestAccessControl;
+import org.entando.entando.web.common.exceptions.EntandoAuthorizationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.method.HandlerMethod;
 
 @ExtendWith(MockitoExtension.class)
 class KeycloakOauth2InterceptorTest {
@@ -153,6 +151,15 @@ class KeycloakOauth2InterceptorTest {
         Assertions.assertThrows(EntandoAuthorizationException.class, () -> {
             interceptor.preHandle(request, response, method);
         });
+    }
+
+    @Test
+    void validateTokenOnApiShouldRetrieveUserFromRequestAttribute() {
+        mockAccessControl();
+        Mockito.when(request.getServletPath()).thenReturn("/api");
+        Mockito.when(request.getAttribute("user")).thenReturn(userDetails);
+        Mockito.when(authorizationManager.isAuthOnPermission(any(UserDetails.class), anyString())).thenReturn(true);
+        interceptor.preHandle(request, response, method);
     }
 
     private void mockAccessControl() {
