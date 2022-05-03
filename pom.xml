@@ -4,11 +4,11 @@
     <parent>
         <artifactId>entando-core-parent</artifactId>
         <groupId>org.entando</groupId>
-        <version>7.0.1-ENG-3504-PR-100</version>
+        <version>7.0.2</version>
     </parent>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
-    <version>7.0.1</version>
+    <version>7.0.2</version>
     <packaging>jar</packaging>
     <licenses>
         <license>
@@ -40,7 +40,7 @@
         </repository>
     </repositories>
     <properties>
-        <entando-core-bom.version>7.0.1-ENG-3584</entando-core-bom.version>
+        <entando-core-bom.version>7.0.2-ENG-3584</entando-core-bom.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
