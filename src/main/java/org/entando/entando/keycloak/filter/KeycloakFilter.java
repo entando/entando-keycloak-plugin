@@ -102,6 +102,12 @@ public class KeycloakFilter implements Filter {
                 returnKeycloakJson(response);
                 break;
             default:
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    // Setting the current path as redirect parameter to ensure that a user is redirected back to the
+                    // desired page after the authentication (in particular when using app-builder/admin-console integration)
+                    session.setAttribute(SESSION_PARAM_REDIRECT, request.getRequestURI().substring(request.getContextPath().length()));
+                }
                 chain.doFilter(request, response);
         }
     }

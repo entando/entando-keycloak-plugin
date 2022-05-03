@@ -411,6 +411,23 @@ class KeycloakFilterTest {
         assertJsonBoolean(json, "$.public-client").isTrue();
     }
 
+    @Test
+    void testRedirectParameterIsSet() throws Exception {
+
+        String path = "/do/jacms/Content/list.action";
+        String contextPath = "https://dev.entando.org/entando-app";
+
+        when(configuration.isEnabled()).thenReturn(true);
+        when(request.getServletPath()).thenReturn(path);
+        when(request.getContextPath()).thenReturn(contextPath);
+        when(request.getRequestURI()).thenReturn(contextPath+ path);
+
+        when(request.getSession(false)).thenReturn(session);
+        keycloakFilter.doFilter(request, response, filterChain);
+
+        verify(session).setAttribute(KeycloakFilter.SESSION_PARAM_REDIRECT, "/do/jacms/Content/list.action");
+    }
+
     static class ServletOutputStreamWrapper extends ServletOutputStream {
         private final StringWriter writer;
         private ServletOutputStreamWrapper(final StringWriter aWriter) {
