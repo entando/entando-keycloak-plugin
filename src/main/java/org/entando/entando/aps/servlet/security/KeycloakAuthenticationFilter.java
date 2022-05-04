@@ -1,6 +1,7 @@
 package org.entando.entando.aps.servlet.security;
 
 import static java.util.Optional.ofNullable;
+import static org.entando.entando.aps.servlet.security.KeycloakSecurityConfig.API_PATH;
 
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.authorization.Authorization;
@@ -132,7 +133,7 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
     }
 
     private void setUserOnContext(HttpServletRequest request, UserDetails user, Authentication authentication) {
-        if ("/api".equals(request.getServletPath())) {
+        if (API_PATH.equals(request.getServletPath())) {
             if (request.getSession(false) != null) {
                 throw new AuthenticationException("API endpoints don't accept session cookies") {};
             }

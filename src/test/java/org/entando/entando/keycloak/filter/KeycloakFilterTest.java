@@ -415,17 +415,28 @@ class KeycloakFilterTest {
     void testRedirectParameterIsSet() throws Exception {
 
         String path = "/do/jacms/Content/list.action";
+
+        when(configuration.isEnabled()).thenReturn(true);
+        when(request.getServletPath()).thenReturn(path);
+        keycloakFilter.doFilter(request, response, filterChain);
+
+        verify(session).setAttribute(KeycloakFilter.SESSION_PARAM_REDIRECT, "/do/jacms/Content/list.action");
+    }
+
+    @Test
+    void testLoginPageRedirect() throws Exception {
+
+        String path = "/en/login.page";
+        String returnUrlParam = "https%3A%2F%2Fdev.entando.org%2Fentando-app";
         String contextPath = "https://dev.entando.org/entando-app";
 
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn(path);
+        when(request.getParameter("returnUrl")).thenReturn(returnUrlParam);
         when(request.getContextPath()).thenReturn(contextPath);
-        when(request.getRequestURI()).thenReturn(contextPath+ path);
-
-        when(request.getSession(false)).thenReturn(session);
         keycloakFilter.doFilter(request, response, filterChain);
 
-        verify(session).setAttribute(KeycloakFilter.SESSION_PARAM_REDIRECT, "/do/jacms/Content/list.action");
+        verify(response).sendRedirect("https://dev.entando.org/entando-app/do/login?redirectTo=" + returnUrlParam);
     }
 
     static class ServletOutputStreamWrapper extends ServletOutputStream {

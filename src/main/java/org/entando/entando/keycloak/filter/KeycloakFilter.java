@@ -1,6 +1,7 @@
 package org.entando.entando.keycloak.filter;
 
 import static org.entando.entando.KeycloakWiki.wiki;
+import static org.entando.entando.aps.servlet.security.KeycloakSecurityConfig.API_PATH;
 
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
@@ -80,7 +81,7 @@ public class KeycloakFilter implements Filter {
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
         final HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-        if (!"/api".equals(request.getServletPath())) {
+        if (!API_PATH.equals(request.getServletPath())) {
             final HttpSession session = request.getSession();
             final String accessToken = (String) session.getAttribute(SESSION_PARAM_ACCESS_TOKEN);
 
@@ -102,13 +103,22 @@ public class KeycloakFilter implements Filter {
                 returnKeycloakJson(response);
                 break;
             default:
-                HttpSession session = request.getSession(false);
-                if (session != null) {
-                    // Setting the current path as redirect parameter to ensure that a user is redirected back to the
-                    // desired page after the authentication (in particular when using app-builder/admin-console integration)
-                    session.setAttribute(SESSION_PARAM_REDIRECT, request.getRequestURI().substring(request.getContextPath().length()));
-                }
+                handleLoginRedirect(request, response);
                 chain.doFilter(request, response);
+        }
+    }
+
+    private void handleLoginRedirect(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (!API_PATH.equals(request.getServletPath())) {
+            HttpSession session = request.getSession();
+            if (request.getServletPath().contains("login.page") && request.getParameter("returnUrl") != null) {
+                String returnUrl = request.getParameter("returnUrl");
+                response.sendRedirect(request.getContextPath() + "/do/login?redirectTo=" + returnUrl);
+            } else if (session.getAttribute("user") == null) {
+                // Setting the current path as redirect parameter to ensure that a user is redirected back to the
+                // desired page after the authentication (in particular when using app-builder/admin-console integration)
+                session.setAttribute(SESSION_PARAM_REDIRECT, request.getServletPath());
+            }
         }
     }
 

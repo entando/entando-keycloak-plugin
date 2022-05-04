@@ -1,5 +1,7 @@
 package org.entando.entando.keycloak.interceptor;
 
+import static org.entando.entando.aps.servlet.security.KeycloakSecurityConfig.API_PATH;
+
 import com.agiletec.aps.system.services.authorization.IAuthorizationManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +38,7 @@ public class KeycloakOauth2Interceptor extends HandlerInterceptorAdapter {
 
     private void validateToken(final HttpServletRequest request, final String[] permissions) {
         UserDetails user = null;
-        if ("/api".equals(request.getServletPath())) {
+        if (API_PATH.equals(request.getServletPath())) {
             user = (UserDetails) request.getAttribute("user");
         } else {
             final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
