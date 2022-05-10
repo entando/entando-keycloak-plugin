@@ -16,12 +16,15 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class KeycloakSecurityConfig extends OAuth2SecurityConfiguration {
 
     private final KeycloakAuthenticationFilter keycloakAuthenticationFilter;
+    private final KeycloakLegacyApiAuthenticationFilter keycloakLegacyApiAuthenticationFilter;
     private final KeycloakConfiguration configuration;
 
     @Autowired
     public KeycloakSecurityConfig(final KeycloakAuthenticationFilter keycloakAuthenticationFilter,
+                                  final KeycloakLegacyApiAuthenticationFilter keycloakLegacyApiAuthenticationFilter,
                                   final KeycloakConfiguration configuration) {
         this.keycloakAuthenticationFilter = keycloakAuthenticationFilter;
+        this.keycloakLegacyApiAuthenticationFilter = keycloakLegacyApiAuthenticationFilter;
         this.configuration = configuration;
     }
 
@@ -42,6 +45,7 @@ public class KeycloakSecurityConfig extends OAuth2SecurityConfiguration {
                 .headers().frameOptions().sameOrigin()
                 .and()
                     .addFilterBefore(keycloakAuthenticationFilter, BasicAuthenticationFilter.class)
+                    .addFilterBefore(keycloakLegacyApiAuthenticationFilter, BasicAuthenticationFilter.class)
                     .anonymous().disable()
                     .csrf().disable()
                     .cors();
