@@ -28,7 +28,6 @@ import org.entando.entando.keycloak.services.oidc.OpenIDConnectService;
 import org.entando.entando.keycloak.services.oidc.model.AccessToken;
 import org.entando.entando.keycloak.services.oidc.model.TokenRoles;
 import org.entando.entando.mockhelper.UserMockHelper;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,7 +35,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 
 @ExtendWith(MockitoExtension.class)
 class KeycloakAuthenticationFilterTest {
@@ -111,17 +109,6 @@ class KeycloakAuthenticationFilterTest {
         when(tokenRoles.getRoles()).thenReturn(new ArrayList<>());
         actual = (User) keycloakAuthenticationFilter.attemptAuthentication(request, response).getPrincipal();
         assertEquals(0, actual.getAuthorizations().size());
-    }
-
-    @Test
-    void attemptApiAuthenticationWithSessionShouldReturnError() throws Exception {
-
-        when(request.getServletPath()).thenReturn("/api");
-        when(request.getSession(false)).thenReturn(session);
-
-        Assertions.assertThrows(AuthenticationException.class, () -> {
-            keycloakAuthenticationFilter.attemptAuthentication(request, response);
-        });
     }
 
     @Test
