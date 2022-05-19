@@ -134,9 +134,6 @@ public class KeycloakAuthenticationFilter extends AbstractAuthenticationProcessi
 
     private void setUserOnContext(HttpServletRequest request, UserDetails user, Authentication authentication) {
         if (API_PATH.equals(request.getServletPath())) {
-            if (request.getSession(false) != null) {
-                throw new AuthenticationException("API endpoints don't accept session cookies") {};
-            }
             request.setAttribute("user", user);
         } else {
             SecurityContextHolder.getContext().setAuthentication(authentication);

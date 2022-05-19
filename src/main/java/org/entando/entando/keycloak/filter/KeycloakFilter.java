@@ -117,7 +117,11 @@ public class KeycloakFilter implements Filter {
             } else if (session.getAttribute("user") == null) {
                 // Setting the current path as redirect parameter to ensure that a user is redirected back to the
                 // desired page after the authentication (in particular when using app-builder/admin-console integration)
-                session.setAttribute(SESSION_PARAM_REDIRECT, request.getServletPath());
+                String redirect = request.getServletPath();
+                if (request.getQueryString() != null) {
+                    redirect += "?" + request.getQueryString();
+                }
+                session.setAttribute(SESSION_PARAM_REDIRECT, redirect);
             }
         }
     }

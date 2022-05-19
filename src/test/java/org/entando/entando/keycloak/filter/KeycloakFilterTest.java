@@ -424,6 +424,20 @@ class KeycloakFilterTest {
     }
 
     @Test
+    void testRedirectParameterWithQueryStringIsSet() throws Exception {
+
+        String path = "/do/jacms/Resource/list.action";
+        String queryString = "resourceTypeCode=Image";
+
+        when(configuration.isEnabled()).thenReturn(true);
+        when(request.getServletPath()).thenReturn(path);
+        when(request.getQueryString()).thenReturn(queryString);
+        keycloakFilter.doFilter(request, response, filterChain);
+
+        verify(session).setAttribute(KeycloakFilter.SESSION_PARAM_REDIRECT, "/do/jacms/Resource/list.action?resourceTypeCode=Image");
+    }
+
+    @Test
     void testLoginPageRedirect() throws Exception {
 
         String path = "/en/login.page";
