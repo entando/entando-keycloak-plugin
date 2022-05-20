@@ -1,14 +1,29 @@
 package org.entando.entando.keycloak.filter;
 
+import static org.entando.entando.KeycloakWiki.wiki;
+import static org.entando.entando.aps.servlet.security.KeycloakSecurityConfig.API_PATH;
+
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.UserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.UUID;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.KeycloakWiki;
 import org.entando.entando.aps.servlet.security.GuestAuthentication;
 import org.entando.entando.aps.system.exception.RestServerError;
+import org.entando.entando.ent.exception.EntException;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
 import org.entando.entando.keycloak.services.KeycloakJson;
@@ -22,22 +37,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.HttpClientErrorException;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.util.UUID;
-
-import static org.entando.entando.KeycloakWiki.wiki;
-
-import org.entando.entando.ent.exception.EntException;
 
 public class KeycloakFilter implements Filter {
 
@@ -81,11 +80,14 @@ public class KeycloakFilter implements Filter {
 
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
         final HttpServletResponse response = (HttpServletResponse) servletResponse;
-        final HttpSession session = request.getSession();
-        final String accessToken = (String) session.getAttribute(SESSION_PARAM_ACCESS_TOKEN);
 
-        if (accessToken != null && !isAccessTokenValid(accessToken) && !refreshToken(request)) {
-            invalidateSession(request);
+        if (!API_PATH.equals(request.getServletPath())) {
+            final HttpSession session = request.getSession();
+            final String accessToken = (String) session.getAttribute(SESSION_PARAM_ACCESS_TOKEN);
+
+            if (accessToken != null && !isAccessTokenValid(accessToken) && !refreshToken(request)) {
+                invalidateSession(request);
+            }
         }
 
         switch (request.getServletPath()) {
@@ -101,7 +103,26 @@ public class KeycloakFilter implements Filter {
                 returnKeycloakJson(response);
                 break;
             default:
+                handleLoginRedirect(request, response);
                 chain.doFilter(request, response);
+        }
+    }
+
+    private void handleLoginRedirect(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (!API_PATH.equals(request.getServletPath())) {
+            HttpSession session = request.getSession();
+            if (request.getServletPath().contains("login.page") && request.getParameter("returnUrl") != null) {
+                String returnUrl = request.getParameter("returnUrl");
+                response.sendRedirect(request.getContextPath() + "/do/login?redirectTo=" + returnUrl);
+            } else if (session.getAttribute("user") == null) {
+                // Setting the current path as redirect parameter to ensure that a user is redirected back to the
+                // desired page after the authentication (in particular when using app-builder/admin-console integration)
+                String redirect = request.getServletPath();
+                if (request.getQueryString() != null) {
+                    redirect += "?" + request.getQueryString();
+                }
+                session.setAttribute(SESSION_PARAM_REDIRECT, redirect);
+            }
         }
     }
 
@@ -200,7 +221,7 @@ public class KeycloakFilter implements Filter {
 
                 keycloakGroupManager.processNewUser(user);
                 saveUserOnSession(request, user);
-                log.info("Sucessfuly authenticated user {}", user.getUsername());
+                log.info("Successfully authenticated user {}", user.getUsername());
             } catch (HttpClientErrorException e) {
                 if (HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
                     throw new RestServerError("Unable to validate token because the Client in keycloak is configured as public. " +

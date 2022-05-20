@@ -15,6 +15,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableWebSecurity
 public class KeycloakSecurityConfig extends OAuth2SecurityConfiguration {
 
+    public static final String API_PATH = "/api";
+
     private final KeycloakAuthenticationFilter keycloakAuthenticationFilter;
     private final KeycloakLegacyApiAuthenticationFilter keycloakLegacyApiAuthenticationFilter;
     private final KeycloakConfiguration configuration;
