@@ -62,4 +62,12 @@
         <property name="keycloakEnabled" value="${keycloak.enabled:false}" />
     </bean>
 
+    <bean id="LegacyApiUserExtractor" primary="true"
+            class="org.entando.entando.aps.servlet.security.KeycloakLegacyApiUserExtractor">
+        <constructor-arg name="userManager" ref="UserManager" />
+        <constructor-arg name="authorizationManager" ref="AuthorizationManager" />
+        <constructor-arg name="tokenManager" ref="OAuth2TokenManager" />
+        <property name="keycloakEnabled" value="${keycloak.enabled:false}" />
+    </bean>
+
 </beans>
