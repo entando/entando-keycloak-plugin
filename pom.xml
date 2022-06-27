@@ -4,7 +4,7 @@
     <parent>
         <artifactId>entando-core-parent</artifactId>
         <groupId>org.entando</groupId>
-        <version>7.1.0-ENG-3828-PR-120</version>
+        <version>7.1.0-ENG-3840-PR-128</version>
     </parent>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
@@ -40,7 +40,7 @@
         </repository>
     </repositories>
     <properties>
-        <entando-core-bom.version>7.1.0-ENG-3828</entando-core-bom.version>
+        <entando-core-bom.version>7.1.0-ENG-3840</entando-core-bom.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
@@ -135,8 +135,17 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -163,6 +172,15 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path-assert</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
