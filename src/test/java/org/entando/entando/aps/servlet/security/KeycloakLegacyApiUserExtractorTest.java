@@ -44,6 +44,7 @@ class KeycloakLegacyApiUserExtractorTest {
 
     @Test
     void getUser_keycloakEnabledAndAuthenticationNotSet_shouldReturnNull() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(null);
         userExtractor.setKeycloakEnabled(true);
         UserDetails userDetails = userExtractor.getUser(request);
         Assertions.assertNull(userDetails);
