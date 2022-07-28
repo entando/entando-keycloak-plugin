@@ -6,6 +6,7 @@ import static org.entando.entando.aps.servlet.security.KeycloakSecurityConfig.AP
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
+import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -114,7 +115,7 @@ public class KeycloakFilter implements Filter {
             if (request.getServletPath().contains("login.page") && request.getParameter("returnUrl") != null) {
                 String returnUrl = request.getParameter("returnUrl");
                 response.sendRedirect(request.getContextPath() + "/do/login?redirectTo=" + returnUrl);
-            } else if (session.getAttribute("user") == null) {
+            } else if (!isRegisteredUser(session)) {
                 // Setting the current path as redirect parameter to ensure that a user is redirected back to the
                 // desired page after the authentication (in particular when using app-builder/admin-console integration)
                 String redirect = request.getServletPath();
@@ -124,6 +125,11 @@ public class KeycloakFilter implements Filter {
                 session.setAttribute(SESSION_PARAM_REDIRECT, redirect);
             }
         }
+    }
+
+    private boolean isRegisteredUser(HttpSession session) {
+        User userFromSession = (User) session.getAttribute("user");
+        return userFromSession != null && !"guest".equals(userFromSession.getUsername());
     }
 
     private void returnKeycloakJson(final HttpServletResponse response) throws IOException {

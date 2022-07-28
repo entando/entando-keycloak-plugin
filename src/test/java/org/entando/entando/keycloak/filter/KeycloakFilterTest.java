@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
+import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
 import com.jayway.jsonpath.JsonPath;
 import java.io.IOException;
@@ -412,10 +413,25 @@ class KeycloakFilterTest {
     }
 
     @Test
-    void testRedirectParameterIsSet() throws Exception {
+    void testRedirectParameterIsSetForNullUser() throws Exception {
 
         String path = "/do/jacms/Content/list.action";
 
+        when(configuration.isEnabled()).thenReturn(true);
+        when(request.getServletPath()).thenReturn(path);
+        keycloakFilter.doFilter(request, response, filterChain);
+
+        verify(session).setAttribute(KeycloakFilter.SESSION_PARAM_REDIRECT, "/do/jacms/Content/list.action");
+    }
+
+    @Test
+    void testRedirectParameterIsSetForGuestUser() throws Exception {
+
+        String path = "/do/jacms/Content/list.action";
+
+        User user = new User();
+        user.setUsername("guest");
+        Mockito.lenient().when(session.getAttribute(eq("user"))).thenReturn(user);
         when(configuration.isEnabled()).thenReturn(true);
         when(request.getServletPath()).thenReturn(path);
         keycloakFilter.doFilter(request, response, filterChain);
