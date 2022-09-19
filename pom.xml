@@ -54,16 +54,19 @@
                 <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
         
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version></plugin>
-    
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M1</version></plugin>
-    </plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M1</version>
+            </plugin>
+            
+        </plugins>
     </build>
     <dependencyManagement>
         <dependencies>
@@ -81,6 +84,16 @@
         <dependency>
             <groupId>org.entando.entando</groupId>
             <artifactId>entando-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.entando.entando</groupId>
+            <artifactId>entando-portal-ui</artifactId>
+            <classifier>classes</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.entando.entando.plugins</groupId>
+            <artifactId>entando-plugin-jacms</artifactId>
+            <classifier>classes</classifier>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -177,10 +190,25 @@
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
         </dependency>
+        
+        <!-- Test Dependencies -->
+        
+        <dependency>
+            <groupId>org.entando.entando</groupId>
+            <artifactId>entando-engine</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path-assert</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
     </dependencies>
 </project>

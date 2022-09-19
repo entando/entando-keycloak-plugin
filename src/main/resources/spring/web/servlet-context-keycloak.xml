@@ -5,6 +5,6 @@
 
     <import resource="classpath:spring/propertyPlaceholder.xml" />
     <import resource="classpath:spring/web/servlet-context.xml" />
-    <import resource="../aps/managers/keycloak.xml"/>
+    <import resource="../plugins/keycloak/aps/keycloak.xml"/>
 
 </beans>
