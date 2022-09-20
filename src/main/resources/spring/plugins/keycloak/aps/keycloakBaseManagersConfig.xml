@@ -69,15 +69,4 @@
         <property name="enabled" value="${keycloak.enabled:false}"/>
     </bean>
     
-    <bean id="jacmsProtectedResourceProvider" class="org.entando.entando.keycloak.servlet.KcProtectedResourceProvider">
-        <property name="resourceManager" ref="jacmsResourceManager"/>
-        <property name="contentAuthorizationHelper" ref="jacmsContentAuthorizationHelper"/>
-        <property name="userManager" ref="UserManager"/>
-        <property name="authorizationManager" ref="AuthorizationManager"/>
-        <property name="urlManager" ref="URLManager"/>
-        <property name="pageManager" ref="PageManager"/>
-        <property name="langManager" ref="LangManager"/>
-        <property name="enabled" value="${keycloak.enabled:false}"/>
-    </bean>
-    
 </beans>
