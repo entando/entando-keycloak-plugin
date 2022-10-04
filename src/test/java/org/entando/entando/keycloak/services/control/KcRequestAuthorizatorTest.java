@@ -11,6 +11,7 @@ import com.agiletec.aps.system.services.controller.ControllerManager;
 import com.agiletec.aps.system.services.controller.control.ControlServiceInterface;
 import com.agiletec.aps.system.services.page.IPage;
 import com.agiletec.aps.system.services.page.IPageManager;
+import javax.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -19,7 +20,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
  * @author E.Santoboni
  */
 class KcRequestAuthorizatorTest extends BaseTestCase {
-
+    
     @Test
     void testService_1() throws Throwable {
 		RequestContext reqCtx = this.getRequestContext();
@@ -69,7 +70,23 @@ class KcRequestAuthorizatorTest extends BaseTestCase {
 		int status = _authorizator.service(reqCtx, ControllerManager.CONTINUE);
 		assertEquals(ControllerManager.SYS_ERROR, status);
 	}
-
+    
+	@Test
+    void testUserNotAuthorized() throws Throwable {
+		RequestContext reqCtx = this.getRequestContext();
+		((MockHttpServletRequest) reqCtx.getRequest()).setRequestURI("/Entando/it/coach_page.page");
+		this.setUserOnSession("editorCustomers");
+		IPage requiredPage = this._pageManager.getOnlinePage("coach_page");
+		reqCtx.addExtraParam(SystemConstants.EXTRAPAR_CURRENT_PAGE, requiredPage);
+		int status = _authorizator.service(reqCtx, ControllerManager.CONTINUE);
+		assertEquals(ControllerManager.CONTINUE, status);
+		String redirectUrl = (String) reqCtx.getExtraParam(RequestContext.EXTRAPAR_REDIRECT_URL);
+		assertNull(redirectUrl);
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, reqCtx.getResponse().getStatus());
+        IPage currentPage = (IPage) reqCtx.getExtraParam(SystemConstants.EXTRAPAR_CURRENT_PAGE);
+		assertEquals("errorpage", currentPage.getCode());
+	}
+    
     @BeforeEach
 	private void init() throws Exception {
 		try {
