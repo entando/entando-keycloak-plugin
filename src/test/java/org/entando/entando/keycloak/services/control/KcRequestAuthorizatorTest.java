@@ -54,9 +54,9 @@ public class KcRequestAuthorizatorTest extends BaseTestCase {
 		int status = _authorizator.service(reqCtx, ControllerManager.CONTINUE);
 		assertEquals(ControllerManager.REDIRECT, status);
 		String redirectUrl = (String) reqCtx.getExtraParam(RequestContext.EXTRAPAR_REDIRECT_URL);
-		assertTrue(redirectUrl.contains("/Entando/it/login.page?"));
-		assertTrue(redirectUrl.contains("redirectflag=1"));
-		assertTrue(redirectUrl.contains("returnUrl="));
+		assertTrue(redirectUrl.contains("/Entando/do/login?"));
+		assertTrue(redirectUrl.contains("redirectflag"));
+		assertTrue(redirectUrl.contains("redirectTo="));
 		assertTrue(redirectUrl.contains("customers_page.page"));
 	}
 
@@ -76,6 +76,7 @@ public class KcRequestAuthorizatorTest extends BaseTestCase {
 			this._authorizator = (ControlServiceInterface) this.getApplicationContext().getBean("RequestAuthorizatorControlService");
 			this._pageManager = (IPageManager) this.getService(SystemConstants.PAGE_MANAGER);
             super.getRequestContext().removeExtraParam(RequestContext.EXTRAPAR_REDIRECT_URL);
+            ((KcRequestAuthorizator) this._authorizator).setEnabled(true);
 		} catch (Throwable e) {
 			throw new Exception(e);
 		}
