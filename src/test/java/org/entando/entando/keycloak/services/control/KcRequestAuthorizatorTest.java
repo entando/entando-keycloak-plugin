@@ -23,6 +23,13 @@ class KcRequestAuthorizatorTest extends BaseTestCase {
     
     @Test
     void testService_1() throws Throwable {
+        ((KcRequestAuthorizator) this._authorizator).setEnabled(false);
+		this.executeTestService_1();
+        ((KcRequestAuthorizator) this._authorizator).setEnabled(true);
+        this.executeTestService_1();
+	}
+    
+    private void executeTestService_1() throws Throwable {
 		RequestContext reqCtx = this.getRequestContext();
 		this.setUserOnSession(SystemConstants.GUEST_USER_NAME);
 		IPage root = this._pageManager.getOnlineRoot();
@@ -44,11 +51,19 @@ class KcRequestAuthorizatorTest extends BaseTestCase {
 		String redirectUrl = (String) reqCtx.getExtraParam(RequestContext.EXTRAPAR_REDIRECT_URL);
 		assertNull(redirectUrl);
 	}
+    
+    @Test
+    void testServiceError() throws Throwable {
+        RequestContext reqCtx = this.getRequestContext();
+		int status = _authorizator.service(reqCtx, ControllerManager.ERROR);
+		assertEquals(ControllerManager.ERROR, status);
+	}
 
 	@Test
     void testServiceFailure_1() throws Throwable {
 		RequestContext reqCtx = this.getRequestContext();
 		((MockHttpServletRequest) reqCtx.getRequest()).setRequestURI("/Entando/it/customers_page.page");
+		((MockHttpServletRequest) reqCtx.getRequest()).setQueryString("qsparamname=qsparamvalue");
 		this.setUserOnSession(SystemConstants.GUEST_USER_NAME);
 		IPage requiredPage = this._pageManager.getOnlinePage("customers_page");
 		reqCtx.addExtraParam(SystemConstants.EXTRAPAR_CURRENT_PAGE, requiredPage);
@@ -59,6 +74,8 @@ class KcRequestAuthorizatorTest extends BaseTestCase {
 		assertTrue(redirectUrl.contains("redirectflag"));
 		assertTrue(redirectUrl.contains("redirectTo="));
 		assertTrue(redirectUrl.contains("customers_page.page"));
+		assertTrue(redirectUrl.contains("qsparamname"));
+		assertTrue(redirectUrl.contains("qsparamvalue"));
 	}
 
 	@Test
