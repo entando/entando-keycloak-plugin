@@ -59,7 +59,7 @@ public class KcRequestAuthorizator extends RequestAuthorizator {
                 kcEntryPoint += "do/login?redirectTo=" + URLEncoder.encode(targetUrl.toString(), "UTF-8");
                 retStatus = this.redirectKcUrl(kcEntryPoint, reqCtx);
 			}
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			logger.error("Error while processing the request", t);
 			retStatus = ControllerManager.SYS_ERROR;
 			reqCtx.setHTTPError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -78,7 +78,7 @@ public class KcRequestAuthorizator extends RequestAuthorizator {
             } else {
                 return this.returnUserNotAuthorized(reqCtx);
 			}
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			retStatus = ControllerManager.SYS_ERROR;
 			reqCtx.setHTTPError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			logger.error("Error on creation redirect to url {}", urlDest, t);

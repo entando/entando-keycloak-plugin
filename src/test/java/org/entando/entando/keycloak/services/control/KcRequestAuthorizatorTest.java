@@ -18,7 +18,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author E.Santoboni
  */
-public class KcRequestAuthorizatorTest extends BaseTestCase {
+class KcRequestAuthorizatorTest extends BaseTestCase {
 
     @Test
     void testService_1() throws Throwable {
