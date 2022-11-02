@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
-    <version>7.1.0</version>
+    <version>7.1.2</version>
     <packaging>jar</packaging>
     <licenses>
         <license>
@@ -40,7 +40,7 @@
         </repository>
     </repositories>
     <properties>
-        <entando-core-bom.version>7.1.0</entando-core-bom.version>
+        <entando-core-bom.version>7.1.2-ECS-503</entando-core-bom.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
