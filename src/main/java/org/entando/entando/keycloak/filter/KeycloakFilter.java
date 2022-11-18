@@ -91,6 +91,7 @@ public class KeycloakFilter implements Filter {
             case "/do/login":
             case "/do/doLogin":
             case "/do/login.action":
+            case "/do/doLogin.action":
                 doLogin(request, response, chain);
                 break;
             case "/do/logout":
