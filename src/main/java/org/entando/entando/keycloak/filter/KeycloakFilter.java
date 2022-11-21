@@ -1,25 +1,11 @@
 package org.entando.entando.keycloak.filter;
 
-import static org.entando.entando.KeycloakWiki.wiki;
-import static org.entando.entando.aps.servlet.security.KeycloakSecurityConfig.API_PATH;
-
 import com.agiletec.aps.system.SystemConstants;
 import com.agiletec.aps.system.services.user.IAuthenticationProviderManager;
 import com.agiletec.aps.system.services.user.IUserManager;
 import com.agiletec.aps.system.services.user.User;
 import com.agiletec.aps.system.services.user.UserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.UUID;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.KeycloakWiki;
 import org.entando.entando.aps.servlet.security.GuestAuthentication;
@@ -38,6 +24,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.HttpClientErrorException;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.UUID;
+
+import static org.entando.entando.KeycloakWiki.wiki;
+import static org.entando.entando.aps.servlet.security.KeycloakSecurityConfig.API_PATH;
 
 public class KeycloakFilter implements Filter {
 
@@ -93,7 +89,9 @@ public class KeycloakFilter implements Filter {
 
         switch (request.getServletPath()) {
             case "/do/login":
+            case "/do/doLogin":
             case "/do/login.action":
+            case "/do/doLogin.action":
                 doLogin(request, response, chain);
                 break;
             case "/do/logout":
