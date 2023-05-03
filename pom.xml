@@ -6,11 +6,11 @@
     <parent>
         <artifactId>entando-core-parent</artifactId>
         <groupId>org.entando</groupId>
-        <version>6.3.9</version>
+        <version>6.5.0</version>
     </parent>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
-    <version>6.5.0</version>
+    <version>6.5.1</version>
     <packaging>jar</packaging>
     <licenses>
         <license>
@@ -42,7 +42,7 @@
         </repository>
     </repositories>
     <properties>
-        <entando-engine.version>6.5.0</entando-engine.version>
+        <entando-engine.version>6.5.3</entando-engine.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
