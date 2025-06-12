@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.entando.entando.KeycloakWiki;
 import org.entando.entando.aps.servlet.security.GuestAuthentication;
 import org.entando.entando.aps.system.exception.RestServerError;
+import org.entando.entando.aps.util.UrlUtils;
 import org.entando.entando.keycloak.services.KeycloakAuthorizationManager;
 import org.entando.entando.keycloak.services.KeycloakConfiguration;
 import org.entando.entando.keycloak.services.KeycloakJson;
@@ -154,8 +155,9 @@ public class KeycloakFilter implements Filter {
     private void doLogout(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         final HttpSession session = request.getSession();
         final String redirectUri = request.getRequestURL().toString().replace("/do/logout.action", "");
+        String fixedUrl = this.fixUrlSchema(redirectUri);
         session.invalidate();
-        response.sendRedirect(oidcService.getLogoutUrl(redirectUri));
+        response.sendRedirect(oidcService.getLogoutUrl(fixedUrl));
     }
 
     private void doLogin(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain) throws IOException, ServletException {
@@ -200,7 +202,7 @@ public class KeycloakFilter implements Filter {
 
                 keycloakGroupManager.processNewUser(user);
                 saveUserOnSession(request, user);
-                log.info("Sucessfuly authenticated user {}", user.getUsername());
+                log.info("Successfully authenticated user {}", user.getUsername());
             } catch (HttpClientErrorException e) {
                 if (HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
                     throw new RestServerError("Unable to validate token because the Client in keycloak is configured as public. " +
@@ -226,8 +228,9 @@ public class KeycloakFilter implements Filter {
             return;
         } else {
             final String path = request.getRequestURL().toString().replace(request.getServletPath(), "");
+            String fixedUrl = this.fixUrlSchema(path);
             if (redirectTo != null){
-                final String redirect = redirectTo.replace(path, "");
+                final String redirect = redirectTo.replace(fixedUrl, "");
                 if (!redirect.startsWith("/")) {
                     throw new EntandoTokenException("Invalid redirect", request, "guest");
                 }
@@ -246,6 +249,11 @@ public class KeycloakFilter implements Filter {
             session.setAttribute(SESSION_PARAM_STATE, state);
             response.sendRedirect(redirect);
         }
+    }
+
+    protected String fixUrlSchema(String path) {
+        boolean forceHttps = UrlUtils.determineForceHttps();
+        return (forceHttps) ? path.replace("http://", "https://") : path;
     }
 
     private void saveUserOnSession(final HttpServletRequest request, final UserDetails user) {
