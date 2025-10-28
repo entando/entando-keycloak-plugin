@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.entando.entando</groupId>
     <artifactId>entando-keycloak-auth</artifactId>
-    <version>6.6.0</version>
+    <version>6.6.1</version>
     <packaging>jar</packaging>
     <licenses>
         <license>
@@ -42,8 +42,8 @@
         </repository>
     </repositories>
     <properties>
-        <entando-engine.version>6.6.0</entando-engine.version>
         <checkstyle.skip>true</checkstyle.skip>
+        <entando-core-bom-version>6.6.0</entando-core-bom-version>
     </properties>
     <build>
         <plugins>
@@ -67,12 +67,21 @@
         <version>3.0.0-M1</version></plugin>
     </plugins>
     </build>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.entando</groupId>
+                <artifactId>entando-core-bom</artifactId>
+                <version>${entando-core-bom-version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.entando.entando</groupId>
             <artifactId>entando-engine</artifactId>
-            <version>${entando-engine.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
